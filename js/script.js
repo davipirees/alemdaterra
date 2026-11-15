@@ -2,21 +2,110 @@
 (() => {
   "use strict";
 
-  const DATA = window.MISSION_DATA;
+  const languageSelect = document.getElementById("language-select");
+  const languageStorageKey = "diario-language-v2";
+  const languageStores = () => {
+    const stores = [];
+    try { stores.push(window.sessionStorage); } catch (_) { /* Storage may be blocked. */ }
+    try { stores.push(window.localStorage); } catch (_) { /* Storage may be blocked. */ }
+    return stores;
+  };
+  const readLanguagePreference = () => {
+    for (const store of languageStores()) {
+      try {
+        const value = store.getItem(languageStorageKey);
+        if (value === "en" || value === "pt-BR") return value;
+      } catch (_) { /* Storage can be unavailable for local previews or privacy settings. */ }
+    }
+    const fromUrl = new URLSearchParams(window.location.search).get("lang");
+    return fromUrl === "en" || fromUrl === "pt-BR" ? fromUrl : "en";
+  };
+  const saveLanguagePreference = (value) => {
+    let stored = false;
+    for (const store of languageStores()) {
+      try {
+        store.setItem(languageStorageKey, value);
+        stored = true;
+      } catch (_) { /* Try the other storage mechanism, then the URL fallback. */ }
+    }
+    let fallbackUrl = "";
+    try {
+      const url = new URL(window.location.href);
+      if (stored) url.searchParams.delete("lang");
+      else url.searchParams.set("lang", value);
+      fallbackUrl = url.href;
+      window.history.replaceState(window.history.state, "", url.href);
+    } catch (_) { /* The storage preference is still used when history is restricted. */ }
+    return stored || Boolean(fallbackUrl);
+  };
+  const savedLanguage = readLanguagePreference();
+  const isEnglish = savedLanguage === "en";
+  const ui = (portuguese, english) => isEnglish ? english : portuguese;
+  const DATA = isEnglish ? window.MISSION_DATA_EN : window.MISSION_DATA;
   if (!DATA || !Array.isArray(DATA.tabs) || !Array.isArray(DATA.missions)) return;
+
+  document.documentElement.lang = isEnglish ? "en" : "pt-BR";
+  document.title = isEnglish ? "Beyond Earth: exploring the story of space missions" : DATA.tabs[0].title;
+  const description = document.querySelector('meta[name="description"]');
+  if (description) description.content = isEnglish
+    ? "Explore stories of five Moon and Mars explorers, then build a rover in an educational mini game."
+    : "Explore as histórias de cinco equipamentos da Lua e de Marte e monte um robô explorador em um mini game educativo.";
+  const applyShellLanguage = () => {
+    const setText = (selector, value) => {
+      const node = document.querySelector(selector);
+      if (node) node.textContent = value;
+    };
+    const setLabel = (selector, value) => document.querySelector(selector)?.setAttribute("aria-label", value);
+    setText(".skip-link", ui("Pular para o conteúdo", "Skip to content"));
+    setLabel(".wordmark", ui("Diário de bordo, voltar ao início", "Mission log, return to home"));
+    const wordmarkStrong = document.querySelector(".wordmark__text strong");
+    const wordmarkRest = document.querySelector(".wordmark__text span");
+    if (wordmarkStrong) wordmarkStrong.textContent = isEnglish ? "MISSION" : "DIÁRIO";
+    if (wordmarkRest) wordmarkRest.textContent = isEnglish ? "LOG" : "DE BORDO";
+    setLabel(".route-progress", ui("Progresso da rota das missões", "Mission route progress"));
+    setText("#route-progress-label", DATA.progress.label);
+    setLabel("#route-progress-bar", ui("Missões conhecidas", "Missions explored"));
+    setLabel("#tab-list", ui("Áreas do diário", "Exhibit sections"));
+    setLabel("#tab-panels", ui("Conteúdo do diário", "Exhibit content"));
+    setLabel(".elaine-dock", "Elaine");
+    setLabel("#elaine-toggle", ui("Alternar falas da Elaine", "Toggle Elaine’s messages"));
+    setLabel("#language-select", "Language / Idioma");
+    setLabel("#mobile-menu-toggle", ui("Abrir menu", "Open menu"));
+    setText("#mobile-menu-toggle span", ui("Menu", "Menu"));
+  };
+  applyShellLanguage();
+  if (languageSelect) {
+    languageSelect.value = isEnglish ? "en" : "pt-BR";
+    languageSelect.addEventListener("change", () => {
+      const persisted = saveLanguagePreference(languageSelect.value);
+      if (persisted) {
+        window.location.reload();
+        return;
+      }
+      const fallback = new URL(window.location.href);
+      fallback.searchParams.set("lang", languageSelect.value);
+      window.location.assign(fallback.href);
+    });
+  }
 
   const byId = (items, id) => items.find((item) => item.id === id);
   const missionsById = new Map(DATA.missions.map((mission) => [mission.id, mission]));
-  const gameQuestions = Array.isArray(window.MINI_GAME_QUESTIONS) ? window.MINI_GAME_QUESTIONS : [];
-  const gameRoundLength = 8;
+  const sourceGameQuestions = Array.isArray(window.MINI_GAME_QUESTIONS) ? window.MINI_GAME_QUESTIONS : [];
+  const gameQuestions = isEnglish && Array.isArray(window.MINI_GAME_QUESTIONS_EN)
+    ? window.MINI_GAME_QUESTIONS_EN.map((question) => {
+      const source = sourceGameQuestions.find((candidate) => candidate.id === question.id);
+      return { ...(source || {}), ...question };
+    })
+    : sourceGameQuestions;
+  const gameRoundLength = 10;
   const gameHintLimit = 3;
-  const gameAttemptLimit = 3;
   const gamePieces = [
-    { id: "chassis", label: "Corpo e chassi" },
-    { id: "power", label: "Painéis de energia" },
-    { id: "wheels", label: "Rodas" },
-    { id: "antenna", label: "Antena" },
-    { id: "instrument", label: "Braço científico" }
+    { id: "chassis", label: ui("Corpo e chassi", "Body and chassis") },
+    { id: "power", label: ui("Painéis de energia", "Solar panels") },
+    { id: "wheels", label: ui("Rodas", "Wheels") },
+    { id: "antenna", label: ui("Antena", "Antenna") },
+    { id: "instrument", label: ui("Braço científico", "Science arm") },
+    { id: "camera", label: ui("Câmeras", "Cameras") }
   ];
   const bestScoreKey = "diario-mini-game-recorde";
   const sourcesById = new Map(DATA.metadata.sources.map((source) => [source.id, source]));
@@ -36,7 +125,7 @@
   const sourceLink = (sourceId, label) => {
     const source = sourcesById.get(sourceId);
     if (!source) return null;
-    const link = el("a", "source-link", label || `Fonte: ${source.title}`);
+    const link = el("a", "source-link", label || `${ui("Fonte", "Source")}: ${source.title}`);
     link.href = source.url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
@@ -140,7 +229,7 @@
   let lastElaineLine = "";
   let timelineMissionIndex = 0;
   let timelinePhaseIndex = 0;
-  let gameState = { screen: "intro", questions: [], answers: [], wrongChoices: [], questionIndex: 0, piecesUnlocked: 0, hintsUsed: 0, pendingElaineHint: null };
+  let gameState = { screen: "intro", questions: [], answers: [], wrongChoices: [], questionIndex: 0, piecesUnlocked: 0, hintsUsed: 0 };
   let bestScore = readBestScore();
   let miniGameAccessed = storage.read("diario-mini-game-acessado", false) === true;
 
@@ -171,15 +260,13 @@
       screen: "question",
       questions: selected.map((question) => ({
         ...question,
-        retryCount: 0,
         shuffledOptions: shuffle(question.options.map((label, originalIndex) => ({ label, originalIndex })))
       })),
       answers: [],
       wrongChoices: [],
       questionIndex: 0,
       piecesUnlocked: 0,
-      hintsUsed: 0,
-      pendingElaineHint: null
+      hintsUsed: 0
     };
   }
 
@@ -201,7 +288,7 @@
 
   function announceMiniGameLock() {
     const remaining = DATA.missions.length - visitedMissions.size;
-    showElaineForMission(`O mini game será liberado quando você conhecer os cinco equipamentos. Faltam ${remaining} ${remaining === 1 ? "equipamento" : "equipamentos"}.`);
+    showElaineForMission(ui(`O mini game será liberado quando você conhecer os cinco equipamentos. Faltam ${remaining} ${remaining === 1 ? "equipamento" : "equipamentos"}.`, `The mini game unlocks after you meet all five explorers. ${remaining} ${remaining === 1 ? "explorer remains" : "explorers remain"}.`));
   }
 
   function pickElaineLine(lines) {
@@ -237,32 +324,29 @@
       const remaining = Math.max(0, gameHintLimit - gameState.hintsUsed);
       elaineHintCount.textContent = String(remaining);
       elaineButton.setAttribute("aria-label", inMiniGameQuestion
-        ? `Pedir uma dica à Elaine. Restam ${remaining} de ${gameHintLimit} dicas.`
-        : "Pedir ajuda à Elaine no mini game");
+        ? ui(`Pedir uma dica à Elaine. Restam ${remaining} de ${gameHintLimit} dicas.`, `Ask Elaine for a hint. ${remaining} of ${gameHintLimit} hints left.`)
+        : ui("Pedir ajuda à Elaine no mini game", "Ask Elaine for help in the mini game"));
     } else {
-      elaineButton.setAttribute("aria-label", "Alternar falas da Elaine");
+      elaineButton.setAttribute("aria-label", ui("Alternar falas da Elaine", "Toggle Elaine’s messages"));
     }
   }
 
   function giveMiniGameHint() {
     const index = gameState.questionIndex;
     const currentQuestion = gameState.questions[index];
-    const question = gameState.pendingElaineHint || currentQuestion;
-    const hintForDeferredQuestion = question && question !== currentQuestion;
     let message;
     if (gameState.screen !== "question" || !currentQuestion) {
       message = gameState.screen === "result"
-        ? "Mandou bem, tripulante! Comece outra partida quando quiser novas dicas."
-        : "Dúvida, tripulante? Posso te ajudar! Comece uma partida e toque em mim para pedir uma dica.";
-    } else if (!hintForDeferredQuestion && gameState.answers[index]) {
-      message = "Essa pergunta já foi resolvida. Na próxima, posso ajudar com uma dica!";
+        ? ui("Mandou bem, tripulante! Comece outra partida quando quiser novas dicas.", "Nice work, crew member! Start another round whenever you want more hints.")
+        : ui("Dúvida, tripulante? Posso te ajudar! Comece uma partida e toque em mim para pedir uma dica.", "Need a hand, crew member? Start a round and tap me for a hint.");
+    } else if (gameState.answers[index]) {
+      message = ui("Essa pergunta já foi resolvida. Na próxima, posso ajudar com uma dica!", "This question is already answered. I can help with the next one!");
     } else if (gameState.hintsUsed >= gameHintLimit) {
-      message = "Você já usou minhas três dicas nesta partida. Releia as alternativas e tente mais uma vez!";
+      message = ui("Você já usou minhas três dicas nesta partida. Releia as alternativas e tente mais uma vez!", "You have used all three hints this round. Review the choices and try again!");
     } else {
       gameState.hintsUsed += 1;
-      const context = hintForDeferredQuestion ? "Dica para a pergunta que volta no final" : `Dica ${gameState.hintsUsed} de ${gameHintLimit}`;
-      message = `${context}: ${question.hint || "Compare o trabalho do equipamento com as pistas apresentadas na pergunta."}`;
-      gameState.pendingElaineHint = null;
+      const context = ui(`Dica ${gameState.hintsUsed} de ${gameHintLimit}`, `Hint ${gameState.hintsUsed} of ${gameHintLimit}`);
+      message = `${context}: ${currentQuestion.hint || ui("Compare o trabalho do equipamento com as pistas apresentadas na pergunta.", "Compare the equipment’s job with the clues in the question.")}`;
     }
     elaineMessage.textContent = message;
     elaineMessage.hidden = false;
@@ -270,13 +354,13 @@
     updateElaineHintCounter();
   }
 
-  function remindElaineCanHelp({ deferred = false, resolved = false } = {}) {
+  function remindElaineCanHelp({ resolved = false } = {}) {
     const remaining = Math.max(0, gameHintLimit - gameState.hintsUsed);
     const message = resolved
-      ? "Essa pergunta já foi respondida. Na próxima, se tiver dúvida, toque em mim para pedir uma dica."
+      ? ui("Essa pergunta já foi respondida. Na próxima, se tiver dúvida, toque em mim para pedir uma dica.", "This question is answered. If you need help with the next one, tap me for a hint.")
       : remaining > 0
-        ? `${deferred ? "Essa pergunta volta no final" : "Quase, tripulante"}. Quer uma dica? Toque em mim para pedir uma. Restam ${remaining} ${remaining === 1 ? "dica" : "dicas"}.`
-        : "Quase, tripulante! Você já usou as três dicas desta partida. Tente outra alternativa ou guarde a pergunta para o final.";
+        ? ui(`Quase, tripulante. Quer uma dica? Toque em mim para pedir uma. Restam ${remaining} ${remaining === 1 ? "dica" : "dicas"}.`, `Almost, crew member. Want a hint? Tap me. You have ${remaining} ${remaining === 1 ? "hint" : "hints"} left.`)
+        : ui("Quase, tripulante! Você já usou as três dicas desta partida. Tente outra alternativa.", "Almost, crew member! You have used all three hints this round. Try another choice.");
     elaineMessage.textContent = message;
     elaineMessage.hidden = false;
     elaineButton.setAttribute("aria-expanded", "true");
@@ -330,8 +414,8 @@
       titleBlock.append(el("h1", "panel-title", tabModel.title));
       titleBlock.append(el("p", "panel-intro", tabModel.intro));
       heading.append(titleBlock);
-      const homeLink = button("Voltar ao início", "button button--quiet", () => navigate("inicio"));
-      homeLink.setAttribute("aria-label", `Voltar ao início a partir de ${tab.label}`);
+      const homeLink = button(ui("Voltar ao início", "Back to home"), "button button--quiet", () => navigate("inicio"));
+      homeLink.setAttribute("aria-label", ui(`Voltar ao início a partir de ${tab.label}`, `Back to home from ${tab.label}`));
       heading.append(homeLink);
       panel.append(heading);
     }
@@ -356,9 +440,9 @@
     hero.append(copy);
 
     const art = el("div", "home-hero__art");
-    art.setAttribute("aria-label", "Elaine acompanha os destinos espaciais interativos");
+    art.setAttribute("aria-label", ui("Elaine acompanha os destinos espaciais interativos", "Elaine guides you through these interactive space destinations"));
     const bot = button("", "hero-elaine", () => showElaineForMission(DATA.home.elaineLines));
-    bot.setAttribute("aria-label", "Ouvir as boas-vindas da Elaine");
+    bot.setAttribute("aria-label", ui("Ouvir as boas-vindas da Elaine", "Hear Elaine’s welcome message"));
     const botImage = el("img", "hero-elaine__image");
     botImage.src = DATA.home.elainePhoto.src;
     botImage.alt = DATA.home.elainePhoto.alt;
@@ -371,7 +455,7 @@
     const destinations = el("div", "home-destination-controls");
     DATA.home.destinations.forEach((destination) => {
       const hotspot = button("", `home-hotspot home-hotspot--${destination.id}`, () => openDestination(destination));
-      hotspot.setAttribute("aria-label", `${destination.label}: ${destination.note}. Abrir missões.`);
+      hotspot.setAttribute("aria-label", ui(`${destination.label}: ${destination.note}. Abrir missões.`, `${destination.label}: ${destination.note}. Open missions.`));
       const orb = el("span", `home-hotspot__orb home-hotspot__orb--${destination.id}`);
       const words = el("span", "home-hotspot__words");
       words.append(el("strong", "", destination.label), el("small", "", destination.note));
@@ -395,19 +479,21 @@
       image.decoding = "async";
       image.addEventListener("error", () => {
         image.remove();
-        frame.append(el("span", "mission-photo__fallback", "Imagem indisponível · consulte a fonte"));
+        frame.append(el("span", "mission-photo__fallback", ui("Imagem indisponível · consulte a fonte", "Image unavailable · see the source")));
       }, { once: true });
       frame.append(image);
     } else {
-      frame.append(el("span", "mission-photo__fallback", "Imagem indisponível · consulte a fonte"));
+      frame.append(el("span", "mission-photo__fallback", ui("Imagem indisponível · consulte a fonte", "Image unavailable · see the source")));
     }
-    const stamp = el("span", "photo-stamp", /NSSDC/i.test(mission.credit) ? "NASA · NSSDC" : "NASA · ARQUIVO");
+    const stamp = el("span", "photo-stamp", /NSSDC/i.test(mission.credit)
+      ? "NASA · NSSDC"
+      : ui("NASA · ARQUIVO", "NASA · ARCHIVE"));
     frame.append(stamp);
     const caption = el("figcaption", "mission-photo__caption");
     caption.textContent = mission.caption;
     figure.append(frame, caption);
     const credit = el("div", "mission-photo__credit", mission.credit);
-    addSource(credit, mission.photoSourceId, "Abrir crédito e imagem de origem");
+    addSource(credit, mission.photoSourceId, ui("Abrir crédito e imagem de origem", "Open image credit and source"));
     figure.append(credit);
     return figure;
   }
@@ -417,7 +503,7 @@
     card.append(makePhoto(mission, true));
     const content = el("div", "mission-card__content");
     content.append(el("span", "mission-card__category", mission.category), el("h2", "mission-card__title", mission.name), el("p", "mission-card__label", mission.label), el("p", "mission-card__summary", mission.summary));
-    const reveal = button("Conhecer missão", "button button--primary mission-card__button", () => openMission(mission.id));
+    const reveal = button(ui("Conhecer missão", "Explore mission"), "button button--primary mission-card__button", () => openMission(mission.id));
     content.append(reveal);
     card.append(content);
     return card;
@@ -435,9 +521,9 @@
     const visitedPhasesByMission = new Map();
     const legacyPhaseIndex = DATA.timeline.phases.findIndex((phase) => phase.id === "legado");
     const missionNav = el("div", "timeline-missions");
-    missionNav.setAttribute("aria-label", "Missões em ordem cronológica");
+    missionNav.setAttribute("aria-label", ui("Missões em ordem cronológica", "Missions in chronological order"));
     const steps = el("div", "timeline-steps");
-    steps.setAttribute("aria-label", "Etapas da missão selecionada");
+    steps.setAttribute("aria-label", ui("Etapas da missão selecionada", "Stages of the selected mission"));
     const story = el("article", "timeline-story");
     const progress = el("p", "timeline-progress", "");
     const progressText = el("span", "", "");
@@ -445,8 +531,8 @@
     const storyTitle = el("h2", "section-title");
     const storyText = el("p", "timeline-story__text");
     const guide = el("aside", "timeline-guide");
-    guide.setAttribute("aria-label", "Fato interessante desta etapa");
-    const guideLabel = el("p", "timeline-guide__label", "Fato interessante");
+    guide.setAttribute("aria-label", ui("Fato interessante desta etapa", "Interesting fact about this stage"));
+    const guideLabel = el("p", "timeline-guide__label", ui("Fato interessante", "Interesting fact"));
     const guideFact = el("p", "timeline-guide__fact");
     const guidePortrait = el("span", "elaine-dock__portrait timeline-guide__portrait");
     guidePortrait.setAttribute("aria-hidden", "true");
@@ -462,14 +548,14 @@
     const linkedMissions = el("div", "timeline-story__missions");
     const sourceArea = el("div", "timeline-source");
     const controls = el("div", "timeline-controls");
-    const previous = button("Anterior", "button button--quiet");
-    const next = button("Próximo", "button button--primary");
+    const previous = button(ui("Anterior", "Previous"), "button button--quiet");
+    const next = button(ui("Próximo", "Next"), "button button--primary");
     controls.append(previous, next);
     story.append(progress, storyTitle, storyText, guide, linkedMissions, sourceArea, controls);
     orderedMissions.forEach((mission, index) => {
       const missionButton = button("", "timeline-mission", () => showMission(index));
       missionButton.setAttribute("aria-pressed", "false");
-      missionButton.setAttribute("aria-label", `${mission.label}, lançada ${mission.dateLabel}`);
+      missionButton.setAttribute("aria-label", ui(`${mission.label}, lançada ${mission.dateLabel}`, `${mission.label}, launched ${mission.dateLabel}`));
       missionButton.append(el("small", "", mission.dateLabel), el("strong", "", mission.label));
       missionNav.append(missionButton);
     });
@@ -488,23 +574,23 @@
       visitedPhasesByMission.set(missionTimeline.missionId, visitedPhases);
       [...missionNav.children].forEach((tab, index) => tab.setAttribute("aria-pressed", String(index === timelineMissionIndex)));
       [...steps.children].forEach((step, index) => step.setAttribute("aria-pressed", String(index === timelinePhaseIndex)));
-      progressText.textContent = `Missão ${timelineMissionIndex + 1} de ${orderedMissions.length} · etapa ${timelinePhaseIndex + 1} de ${DATA.timeline.phases.length} · ${missionTimeline.dateLabel}`;
+      progressText.textContent = ui(`Missão ${timelineMissionIndex + 1} de ${orderedMissions.length} · etapa ${timelinePhaseIndex + 1} de ${DATA.timeline.phases.length} · ${missionTimeline.dateLabel}`, `Mission ${timelineMissionIndex + 1} of ${orderedMissions.length} · stage ${timelinePhaseIndex + 1} of ${DATA.timeline.phases.length} · ${missionTimeline.dateLabel}`);
       storyTitle.textContent = phase.title;
       storyText.textContent = phase.text;
-      guideFact.textContent = phase.curiosity || "Vamos descobrir um detalhe curioso desta etapa!";
+      guideFact.textContent = phase.curiosity || ui("Vamos descobrir um detalhe curioso desta etapa!", "Let’s discover an interesting detail about this stage!");
       linkedMissions.replaceChildren();
       if (mission && phaseNavigation?.id === "legado") {
         const visitedAllEarlierPhases = DATA.timeline.phases
           .slice(0, legacyPhaseIndex)
           .every((_, index) => visitedPhases.has(index));
         if (visitedAllEarlierPhases) {
-          linkedMissions.append(button(`Conhecer equipamento: ${mission.name}`, "button button--outline", () => openMission(mission.id)));
+          linkedMissions.append(button(`${ui("Conhecer equipamento", "Explore equipment")}: ${mission.name}`, "button button--outline", () => openMission(mission.id)));
         } else {
-          linkedMissions.append(el("p", "timeline-unlock-note", "Passe por Lançamento, Viagem, Chegada, Operação e Descobertas para conhecer este equipamento."));
+          linkedMissions.append(el("p", "timeline-unlock-note", ui("Passe por Lançamento, Viagem, Chegada, Operação e Descobertas para conhecer este equipamento.", "Visit Launch, Cruise, Arrival, Operations, and Discoveries to unlock this equipment.")));
         }
       }
       sourceArea.replaceChildren();
-      addSource(sourceArea, phase.sourceId, "Saiba mais");
+      addSource(sourceArea, phase.sourceId, ui("Saiba mais", "Learn more"));
       previous.disabled = timelineMissionIndex === 0 && timelinePhaseIndex === 0;
       next.disabled = timelineMissionIndex === orderedMissions.length - 1 && timelinePhaseIndex === DATA.timeline.phases.length - 1;
     };
@@ -537,34 +623,54 @@
     target.classList.add("panel-body--map");
     const board = el("div", "schematic-map");
     board.setAttribute("role", "group");
-    board.setAttribute("aria-label", "Mapa esquemático das órbitas entre Marte e Lua. Os cinco pontos coloridos abrem as missões correspondentes.");
+    board.setAttribute("aria-label", ui("Mapa esquemático das órbitas entre Marte e Lua. Os pontos coloridos destacam a órbita de cada local.", "Schematic map of the orbits between Mars and the Moon. Colored markers highlight each location’s orbit."));
     board.append(
       el("span", "map-orbit map-orbit--transfer"),
       el("span", "map-orbit map-orbit--mars map-orbit--inner"),
       el("span", "map-orbit map-orbit--mars map-orbit--outer"),
       el("span", "map-orbit map-orbit--moon map-orbit--inner"),
       el("span", "map-orbit map-orbit--moon map-orbit--outer"),
-      el("span", "map-body map-body--mars", "MARTE"),
-      el("span", "map-body map-body--moon", "LUA")
+      el("span", "map-body map-body--mars", ui("MARTE", "MARS")),
+      el("span", "map-body map-body--moon", ui("LUA", "MOON"))
     );
+    const resolvePointMission = (point) => (Array.isArray(point.missionIds) ? point.missionIds : [])
+      .map((missionId) => missionsById.get(missionId))
+      .find(Boolean);
     DATA.mapPoints.forEach((point) => {
-      const mission = missionsById.get(point.missionIds[0]);
+      const mission = resolvePointMission(point);
       const marker = button("", "map-point", () => {
-        if (mission) {
-          navigate("equipamentos");
-          window.setTimeout(() => openMission(mission.id), 80);
-        }
+        const isSelected = marker.getAttribute("aria-pressed") === "true";
+        const shouldHighlight = !isSelected;
+        const orbitName = point.world === "Lua" || point.world === "Moon" ? "moon" : "mars";
+        const orbitColor = point.color || "#c8a66d";
+        board.querySelectorAll(".map-point").forEach((otherMarker) => {
+          otherMarker.setAttribute("aria-pressed", String(otherMarker === marker && shouldHighlight));
+        });
+        board.querySelectorAll(".map-orbit").forEach((orbit) => {
+          const isMatchingOrbit = shouldHighlight && orbit.classList.contains(`map-orbit--${orbitName}`);
+          orbit.classList.toggle("is-highlighted", isMatchingOrbit);
+          if (isMatchingOrbit) orbit.style.setProperty("--orbit-highlight-color", orbitColor);
+          else orbit.style.removeProperty("--orbit-highlight-color");
+        });
+        board.querySelectorAll(".map-body").forEach((body) => {
+          const isMatchingBody = shouldHighlight && body.classList.contains(`map-body--${orbitName}`);
+          body.classList.toggle("is-highlighted", isMatchingBody);
+          if (isMatchingBody) body.style.setProperty("--orbit-highlight-color", orbitColor);
+          else body.style.removeProperty("--orbit-highlight-color");
+        });
       });
+      marker.setAttribute("aria-pressed", "false");
+      if (mission) marker.dataset.missionId = mission.id;
       marker.style.setProperty("--point-x", `${point.x}%`);
       marker.style.setProperty("--point-y", `${point.y}%`);
       marker.style.setProperty("--mission-color", point.color);
-      marker.setAttribute("aria-label", `Abrir ${mission?.name || "missão"} em ${point.label}, ${point.world}.`);
+      marker.setAttribute("aria-label", ui(`Destacar órbita em ${point.label}, ${point.world}.`, `Highlight the orbit at ${point.label}, ${point.world}.`));
       board.append(marker);
     });
     const legend = el("ul", "map-key");
-    legend.setAttribute("aria-label", "Cores que identificam cada missão no mapa");
+    legend.setAttribute("aria-label", ui("Cores que identificam cada missão no mapa", "Colors that identify each mission on the map"));
     DATA.mapPoints.forEach((point) => {
-      const mission = missionsById.get(point.missionIds[0]);
+      const mission = resolvePointMission(point);
       const item = el("li", "map-key__item");
       const swatch = el("span", "map-key__swatch");
       swatch.style.setProperty("--mission-color", point.color);
@@ -590,12 +696,12 @@
       track.append(bar);
       row.append(top, track);
       const foot = el("div", "scale-row__foot");
-      addSource(foot, spec.scaleSourceId, "Fonte da medida");
-      foot.append(button("Abrir história", "text-button", () => openMission(mission.id)));
+      addSource(foot, spec.scaleSourceId, ui("Fonte da medida", "Measurement source"));
+      foot.append(button(ui("Abrir história", "Open story"), "text-button", () => openMission(mission.id)));
       row.append(foot);
       chart.append(row);
     });
-    target.append(chart, el("p", "scale-footnote", "As barras comparam uma dimensão de referência de cada objeto (altura, largura ou comprimento), conforme indicado ao lado. A escala é comum; o formato de cada veículo é diferente."));
+    target.append(chart, el("p", "scale-footnote", ui("As barras comparam uma dimensão de referência de cada objeto (altura, largura ou comprimento), conforme indicado ao lado. A escala é comum; o formato de cada veículo é diferente.", "The bars compare one reference dimension for each object (height, width, or length), as noted beside it. They share a scale, but each vehicle has a different shape.")));
   }
 
   function renderGlossary(target) {
@@ -610,8 +716,8 @@
     const list = el("div", "source-grid");
     DATA.metadata.sources.forEach((source) => {
       const card = el("article", "source-card");
-      card.append(el("span", "source-card__type", "Fonte oficial"), el("h2", "source-card__title", source.title));
-      const link = sourceLink(source.id, "Abrir referência");
+      card.append(el("span", "source-card__type", ui("Fonte oficial", "Official source")), el("h2", "source-card__title", source.title));
+      const link = sourceLink(source.id, ui("Abrir referência", "Open reference"));
       if (link) card.append(link);
       list.append(card);
     });
@@ -628,22 +734,23 @@
     gameRoot.append(layout, liveStatus);
     target.append(gameRoot);
 
-    const buildRobot = () => {
-      const figure = el("figure", `mini-game-robot${gameState.piecesUnlocked === 5 ? " is-complete" : ""}`);
-      const unlocked = gameState.piecesUnlocked;
+    const buildRobot = (preview = false) => {
+      const unlocked = preview ? gamePieces.length : gameState.piecesUnlocked;
+      const figure = el("figure", `mini-game-robot${unlocked === gamePieces.length ? " is-complete" : ""}${preview ? " mini-game-robot--preview" : ""}`);
+      const robotSuffix = preview ? "preview" : "active";
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("viewBox", "0 0 400 300");
       svg.setAttribute("role", "img");
-      svg.setAttribute("aria-labelledby", "mini-robot-title mini-robot-description");
+      svg.setAttribute("aria-labelledby", `mini-robot-title-${robotSuffix} mini-robot-description-${robotSuffix}`);
       svg.classList.add("mini-robot-svg");
       svg.innerHTML = `
-        <title id="mini-robot-title">Robô explorador original</title>
-        <desc id="mini-robot-description">Robô de seis rodas com corpo, painéis solares, antena e braço científico. ${unlocked} de cinco conjuntos de peças estão desbloqueados. É um personagem educativo, não a representação de um veículo real.</desc>
+        <title id="mini-robot-title-${robotSuffix}">${ui("Robô explorador original", "Original explorer robot")}</title>
+        <desc id="mini-robot-description-${robotSuffix}">${ui(`Robô de seis rodas com corpo, painéis solares, antena, braço científico e câmeras. ${unlocked} de seis conjuntos de peças estão desbloqueados. É um personagem educativo, não a representação de um veículo real.`, `Six-wheeled robot with a chassis, solar panels, antenna, science arm, and cameras. ${unlocked} of six part sets are unlocked. This is an educational character, not a real spacecraft.`)}</desc>
         <defs>
-          <linearGradient id="mini-robot-shell" x1="0" x2="1" y1="0" y2="1">
+          <linearGradient id="mini-robot-shell-${robotSuffix}" x1="0" x2="1" y1="0" y2="1">
             <stop offset="0" stop-color="#49656a"/><stop offset="1" stop-color="#1a3038"/>
           </linearGradient>
-          <linearGradient id="mini-robot-panel" x1="0" x2="1" y1="0" y2="1">
+          <linearGradient id="mini-robot-panel-${robotSuffix}" x1="0" x2="1" y1="0" y2="1">
             <stop offset="0" stop-color="#20546a"/><stop offset="1" stop-color="#102a38"/>
           </linearGradient>
         </defs>
@@ -680,19 +787,25 @@
           <path d="M260 139h19l20-19 22 3m-61 16 15 29 24-4"/><circle class="robot-joint" cx="279" cy="139" r="8"/>
           <circle class="robot-joint" cx="299" cy="120" r="6"/><path class="robot-sensor" d="m319 112 22 4v17l-22 4z"/>
           <path d="M331 113v24m8-20v16"/>
+        </g>
+        <g class="robot-piece ${unlocked > 5 ? "is-unlocked" : "is-locked"}" data-piece-id="camera" aria-hidden="true">
+          <path d="M185 103h30l6 8h-42z"/><circle class="robot-camera-lens" cx="200" cy="107" r="4"/>
         </g>`;
+      svg.innerHTML = svg.innerHTML
+        .replaceAll("url(#mini-robot-shell)", `url(#mini-robot-shell-${robotSuffix})`)
+        .replaceAll("url(#mini-robot-panel)", `url(#mini-robot-panel-${robotSuffix})`);
 
       const stage = el("div", "mini-robot-stage");
       stage.append(svg);
       const caption = el("figcaption", "mini-game-robot__caption");
-      const name = el("strong", "mini-game-robot__name", gameState.robotName || "Seu explorador");
-      const counter = el("span", "mini-game-robot__counter", `Peças: ${unlocked}/5`);
+      const name = el("strong", "mini-game-robot__name", gameState.robotName || ui("Seu explorador", "Your explorer"));
+      const counter = el("span", "mini-game-robot__counter", `${ui("Peças", "Parts")}: ${unlocked}/${gamePieces.length}`);
       caption.append(name, counter);
       const parts = el("ul", "mini-game-parts");
       gamePieces.forEach((piece, index) => {
         const item = el("li", unlocked > index ? "is-unlocked" : "is-locked");
         item.dataset.pieceStatus = piece.id;
-        item.append(el("span", "mini-game-parts__name", piece.label), el("span", "mini-game-parts__state", unlocked > index ? "Desbloqueada" : "Bloqueada"));
+        item.append(el("span", "mini-game-parts__name", piece.label), el("span", "mini-game-parts__state", unlocked > index ? ui("Desbloqueada", "Unlocked") : ui("Bloqueada", "Locked")));
         parts.append(item);
       });
       figure.append(stage, caption, parts);
@@ -701,30 +814,51 @@
 
     const showIntro = () => {
       const panel = el("section", "mini-game-play mini-game-intro");
-      panel.append(el("p", "eyebrow", "OFICINA DE EXPLORAÇÃO"), el("h2", "mini-game-title", "Monte seu robô explorador"));
-      panel.append(el("p", "mini-game-copy", "Você tem até oito perguntas para encaixar as cinco peças do robô. Se errar duas vezes, a pergunta volta no fim da rodada. Cada resposta revela uma pista sobre como os equipamentos espaciais trabalhavam."));
-      panel.append(el("p", "mini-game-record", `Seu recorde: ${bestScore} de 5 peças`));
-      panel.append(button("Começar", "button button--primary", () => {
+      panel.append(el("p", "eyebrow", ui("OFICINA DE EXPLORAÇÃO", "EXPLORER WORKSHOP")), el("h2", "mini-game-title", ui("Monte seu robô explorador", "Build your explorer robot")));
+      panel.append(el("p", "mini-game-copy", ui("Você terá até dez perguntas diferentes para encaixar as seis peças do robô. Cada resposta revela uma pista sobre como os equipamentos espaciais trabalhavam; se precisar, peça uma dica à Elaine.", "You have up to ten different questions to fit the robot’s six parts. Each answer reveals a clue about how space equipment worked; ask Elaine for a hint whenever you need one.")));
+      panel.append(el("p", "mini-game-record", ui(`Seu recorde: ${bestScore} de ${gamePieces.length} peças`, `Your best: ${bestScore} of ${gamePieces.length} parts`)));
+      panel.append(button(ui("Começar", "Start"), "button button--primary", () => {
         gameState = createGameRound();
         updateElaineHintCounter();
-        liveStatus.textContent = "Partida iniciada. Você tem até oito perguntas para montar as cinco peças do robô.";
+        liveStatus.textContent = ui("Partida iniciada. Você tem até dez perguntas diferentes. Elaine pode ajudar com dicas.", "Game started. You have up to ten different questions. Elaine can help with hints.");
         paint(true);
       }));
+      const preview = buildRobot(true).querySelector(".mini-robot-stage").cloneNode(true);
+      preview.classList.add("mini-game-intro__robot-preview");
+      preview.setAttribute("aria-hidden", "true");
+      preview.querySelector("svg")?.removeAttribute("role");
+      panel.append(preview);
       return panel;
+    };
+
+    const advanceGameQuestion = () => {
+      const roundComplete = gameState.questionIndex >= gameState.questions.length - 1 || gameState.piecesUnlocked === gamePieces.length;
+      if (roundComplete) {
+        gameState.screen = "result";
+        saveBestScore(gameState.piecesUnlocked);
+        liveStatus.textContent = ui(`Partida concluída. Você desbloqueou ${gameState.piecesUnlocked} de ${gamePieces.length} peças.`, `Game complete. You unlocked ${gameState.piecesUnlocked} of ${gamePieces.length} parts.`);
+        updateElaineHintCounter();
+        paint(false);
+        window.requestAnimationFrame(() => gameRoot.querySelector(".mini-game-result .mini-game-title")?.focus({ preventScroll: true }));
+        return;
+      }
+      gameState.questionIndex += 1;
+      liveStatus.textContent = ui(`Pergunta ${gameState.questionIndex + 1} de ${gameState.questions.length}.`, `Question ${gameState.questionIndex + 1} of ${gameState.questions.length}.`);
+      paint(true);
     };
 
     const showQuestion = () => {
       const index = gameState.questionIndex;
       const question = gameState.questions[index];
       const questionCount = gameState.questions.length;
-      const attemptLimit = question.retryCount ? gameAttemptLimit : 2;
+      const attemptLimit = 2;
       const mission = missionsById.get(question.equipmentId);
       const panel = el("section", "mini-game-play mini-game-question-panel");
       const progress = el("div", "mini-game-progress");
-      progress.append(el("span", "mini-game-progress__label", `Pergunta ${index + 1} de ${questionCount}`), el("span", "mini-game-progress__count", `Peças: ${gameState.piecesUnlocked}/5`));
+      progress.append(el("span", "mini-game-progress__label", ui(`Pergunta ${index + 1} de ${questionCount}`, `Question ${index + 1} of ${questionCount}`)), el("span", "mini-game-progress__count", `${ui("Peças", "Parts")}: ${gameState.piecesUnlocked}/${gamePieces.length}`));
       const progressBar = el("div", "mini-game-progress__track");
       progressBar.setAttribute("role", "progressbar");
-      progressBar.setAttribute("aria-label", "Progresso da partida");
+      progressBar.setAttribute("aria-label", ui("Progresso da partida", "Game progress"));
       progressBar.setAttribute("aria-valuemin", "0");
       progressBar.setAttribute("aria-valuemax", String(questionCount));
       progressBar.setAttribute("aria-valuenow", String(index + 1));
@@ -744,7 +878,7 @@
       const correctChoice = question.shuffledOptions.findIndex((option) => option.originalIndex === question.correctIndex);
       question.shuffledOptions.forEach((option, optionIndex) => {
         const answer = button("", "mini-game-answer", () => chooseAnswer(optionIndex));
-        answer.setAttribute("aria-label", `Alternativa ${optionIndex + 1}: ${option.label}`);
+        answer.setAttribute("aria-label", ui(`Alternativa ${optionIndex + 1}: ${option.label}`, `Option ${optionIndex + 1}: ${option.label}`));
         answer.append(el("span", "mini-game-answer__key", String(optionIndex + 1)), el("span", "mini-game-answer__text", option.label));
         answer.disabled = Boolean(selected) || missedChoices.includes(optionIndex);
         if (selected && optionIndex === correctChoice) answer.classList.add("is-correct");
@@ -757,20 +891,16 @@
         const feedback = el("article", `mini-game-feedback ${selected?.correct ? "is-correct" : "is-encouraging"}`);
         feedback.setAttribute("aria-live", "off");
         const feedbackTitle = selected?.correct
-          ? "Muito bem! Uma peça encontrou seu lugar."
-          : selected?.deferred
-            ? "Quase! Esta pergunta volta no fim da rodada."
+          ? ui("Muito bem! Uma peça encontrou seu lugar.", "Great job! A part clicked into place.")
           : selected
-            ? `Quase! A resposta era “${question.shuffledOptions[correctChoice].label}”.`
-            : "Quase! Tente mais uma vez!";
+            ? ui(`Quase! A resposta era “${question.shuffledOptions[correctChoice].label}”.`, `Almost! The answer was “${question.shuffledOptions[correctChoice].label}”.`)
+            : ui("Quase! Tente mais uma vez!", "Almost! Try again!");
         feedback.append(el("p", "mini-game-feedback__title", feedbackTitle));
         const feedbackText = selected?.correct
           ? question.explanation
-          : selected?.deferred
-            ? "Vamos seguir para outra missão. Você terá outra oportunidade de responder esta pergunta antes de terminar."
           : selected
             ? question.explanation
-            : `Essa alternativa já foi eliminada. Você ainda tem ${attemptLimit - missedChoices.length} ${attemptLimit - missedChoices.length === 1 ? "tentativa" : "tentativas"} nesta pergunta.`;
+            : ui(`Essa alternativa já foi eliminada. Você ainda tem ${attemptLimit - missedChoices.length} ${attemptLimit - missedChoices.length === 1 ? "tentativa" : "tentativas"} nesta pergunta.`, `That option is eliminated. You have ${attemptLimit - missedChoices.length} ${attemptLimit - missedChoices.length === 1 ? "try" : "tries"} left for this question.`);
         feedback.append(el("p", "mini-game-feedback__fact", feedbackText));
         if (selected?.correct) {
           const reward = el("span", "mini-game-reward", `✦ ${gamePieces[selected.pieceIndex].label}`);
@@ -778,31 +908,18 @@
           feedback.append(reward);
         }
         panel.append(feedback);
-        if (selected) {
+        if (selected?.correct) {
           const robotComplete = gameState.piecesUnlocked === gamePieces.length;
-          const roundComplete = index === gameRoundLength - 1 || robotComplete;
-          panel.append(button(robotComplete ? "Ver robô completo" : roundComplete ? "Ver resultado" : "Próxima pergunta", "button button--primary mini-game-next", () => {
-            if (roundComplete) {
-              gameState.screen = "result";
-              saveBestScore(gameState.piecesUnlocked);
-              liveStatus.textContent = `Partida concluída. Você desbloqueou ${gameState.piecesUnlocked} de 5 peças.`;
-              updateElaineHintCounter();
-              paint(false);
-              window.requestAnimationFrame(() => gameRoot.querySelector(".mini-game-result .mini-game-title")?.focus({ preventScroll: true }));
-              return;
-            }
-            gameState.questionIndex += 1;
-            liveStatus.textContent = `Pergunta ${gameState.questionIndex + 1} de ${gameRoundLength}.`;
-            paint(true);
-          }));
+          const roundComplete = index === questionCount - 1 || robotComplete;
+          panel.append(button(robotComplete ? ui("Ver robô completo", "View completed robot") : roundComplete ? ui("Ver resultado", "View results") : ui("Próxima pergunta", "Next question"), "button button--primary mini-game-next", advanceGameQuestion));
         }
       }
       return panel;
     };
 
     const showResult = () => {
-      const complete = gameState.piecesUnlocked === 5;
-      const missing = 5 - gameState.piecesUnlocked;
+      const complete = gameState.piecesUnlocked === gamePieces.length;
+      const missing = gamePieces.length - gameState.piecesUnlocked;
       const panel = el("section", `mini-game-play mini-game-result ${complete ? "is-complete" : "is-partial"}`);
       if (complete) {
         const celebration = el("div", "mini-game-stars");
@@ -815,39 +932,39 @@
         });
         panel.append(celebration);
       }
-      panel.append(el("p", "eyebrow", complete ? "MISSÃO CUMPRIDA" : "RODADA ENCERRADA"));
-      const resultTitle = el("h2", "mini-game-title", complete ? "Seu robô está pronto!" : "Não foi dessa vez!");
+      panel.append(el("p", "eyebrow", complete ? ui("MISSÃO CUMPRIDA", "MISSION COMPLETE") : ui("RODADA ENCERRADA", "ROUND OVER")));
+      const resultTitle = el("h2", "mini-game-title", complete ? ui("Seu robô está pronto!", "Your robot is ready!") : ui("Não foi dessa vez!", "Not this time!"));
       resultTitle.tabIndex = -1;
       panel.append(resultTitle);
       panel.append(el("p", "mini-game-copy", complete
-        ? "Seu robô está completo! Os exploradores reais também combinaram energia, movimento, comunicação e instrumentos para transformar lugares distantes em novos conhecimentos."
-        : `Você montou ${gameState.piecesUnlocked} de 5 peças em até oito perguntas. Tente novamente: uma nova rodada traz outras perguntas e uma nova chance de completar o explorador.`));
-      panel.append(el("p", "mini-game-record", `Recorde: ${bestScore} de 5 peças · ${missing} ${missing === 1 ? "peça" : "peças"} faltando`));
+        ? ui("Seu robô está completo! Os exploradores reais também combinaram energia, movimento, comunicação e instrumentos para transformar lugares distantes em novos conhecimentos.", "Your robot is complete! Real explorers also combined power, movement, communication, and instruments to turn distant places into new knowledge.")
+        : ui(`Você montou ${gameState.piecesUnlocked} de ${gamePieces.length} peças em até dez perguntas diferentes. Tente novamente: uma nova rodada traz outras perguntas e uma nova chance de completar o explorador.`, `You assembled ${gameState.piecesUnlocked} of ${gamePieces.length} parts in up to ten different questions. Try again: a new round brings new questions and another chance to complete your explorer.`)));
+      panel.append(el("p", "mini-game-record", ui(`Recorde: ${bestScore} de ${gamePieces.length} peças · ${missing} ${missing === 1 ? "peça" : "peças"} faltando`, `Best: ${bestScore} of ${gamePieces.length} parts · ${missing} ${missing === 1 ? "part" : "parts"} left`)));
       if (complete) {
-        const naming = el("label", "mini-game-naming", "Seu robô está completo! Que nome ele vai levar para a próxima missão?");
+        const naming = el("label", "mini-game-naming", ui("Seu robô está completo! Que nome ele vai levar para a próxima missão?", "Your robot is complete! What name will it take on its next mission?"));
         const nameInput = el("input", "mini-game-name-input");
         nameInput.type = "text";
         nameInput.maxLength = 20;
         nameInput.autocomplete = "off";
-        nameInput.placeholder = "Ex.: Faísca";
+        nameInput.placeholder = ui("Ex.: Faísca", "e.g. Spark");
         nameInput.value = gameState.robotName || "";
-        nameInput.setAttribute("aria-label", "Nome do robô completo, guardado apenas nesta tela");
+        nameInput.setAttribute("aria-label", ui("Nome do robô completo, guardado apenas nesta tela", "Name for the completed robot, stored only on this screen"));
         nameInput.addEventListener("input", () => {
           gameState.robotName = nameInput.value.slice(0, 20);
           const robotName = gameRoot.querySelector(".mini-game-robot__name");
-          if (robotName) robotName.textContent = gameState.robotName || "Seu explorador";
+          if (robotName) robotName.textContent = gameState.robotName || ui("Seu explorador", "Your explorer");
         });
         naming.append(nameInput);
         panel.append(naming);
       }
       const actions = el("div", "mini-game-result__actions");
-      actions.append(button(complete ? "Jogar de novo" : "Tentar novamente", "button button--primary", () => {
+      actions.append(button(complete ? ui("Jogar de novo", "Play again") : ui("Tentar novamente", "Try again"), "button button--primary", () => {
         gameState = createGameRound();
         gameState.robotName = "";
-        liveStatus.textContent = `Nova partida iniciada. Você tem até ${gameRoundLength} perguntas para montar o robô.`;
+        liveStatus.textContent = ui(`Nova partida iniciada. Você verá até ${gameRoundLength} perguntas diferentes para montar o robô.`, `New game started. You will see up to ${gameRoundLength} different questions to build the robot.`);
         paint(true);
       }));
-      actions.append(button("Voltar ao início", "button button--quiet", () => navigate("inicio")));
+      actions.append(button(ui("Voltar ao início", "Back to home"), "button button--quiet", () => navigate("inicio")));
       panel.append(actions);
       return panel;
     };
@@ -891,54 +1008,33 @@
       const correct = choiceIndex === correctIndex;
       const pieceIndex = gameState.piecesUnlocked;
       const pieceId = correct ? gamePieces[pieceIndex].id : "";
-      let deferred = false;
       if (correct) {
         gameState.answers[index] = { choiceIndex, correct, pieceIndex };
         gameState.piecesUnlocked += 1;
         saveBestScore(gameState.piecesUnlocked);
-        if (gameState.pendingElaineHint?.id === question.id) gameState.pendingElaineHint = null;
-        liveStatus.textContent = `Resposta certa. ${gamePieces[pieceIndex].label} desbloqueada. Peças: ${gameState.piecesUnlocked} de 5. ${question.explanation}`;
+        liveStatus.textContent = ui(`Resposta certa. ${gamePieces[pieceIndex].label} desbloqueada. Peças: ${gameState.piecesUnlocked} de ${gamePieces.length}. ${question.explanation}`, `Correct. ${gamePieces[pieceIndex].label} unlocked. Parts: ${gameState.piecesUnlocked} of ${gamePieces.length}. ${question.explanation}`);
       } else {
         if (!gameState.wrongChoices[index]) gameState.wrongChoices[index] = [];
         if (gameState.wrongChoices[index].includes(choiceIndex)) return;
         gameState.wrongChoices[index].push(choiceIndex);
-        const attemptLimit = question.retryCount ? gameAttemptLimit : 2;
+        const attemptLimit = 2;
         const attemptsLeft = attemptLimit - gameState.wrongChoices[index].length;
         if (attemptsLeft <= 0) {
-          let retrySlot = -1;
-          if (!question.retryCount) {
-            for (let queuedIndex = gameState.questions.length - 1; queuedIndex > index; queuedIndex -= 1) {
-              if (!gameState.questions[queuedIndex].retryCount && !gameState.answers[queuedIndex]) {
-                retrySlot = queuedIndex;
-                break;
-              }
-            }
-          }
-          if (retrySlot > index) {
-            gameState.questions[retrySlot] = {
-              ...question,
-              retryCount: 1,
-              shuffledOptions: shuffle(question.options.map((label, originalIndex) => ({ label, originalIndex })))
-            };
-            gameState.answers[index] = { choiceIndex, correct: false, pieceIndex: null, deferred: true };
-            gameState.pendingElaineHint = question;
-            gameState.questionIndex += 1;
-            deferred = true;
-            liveStatus.textContent = `Quase! Esta pergunta volta no fim da rodada. Pergunta ${gameState.questionIndex + 1} de ${gameRoundLength}.`;
-          } else {
-            gameState.answers[index] = { choiceIndex, correct: false, pieceIndex: null, revealed: true };
-            if (gameState.pendingElaineHint?.id === question.id) gameState.pendingElaineHint = null;
-            liveStatus.textContent = `Fim das tentativas para esta pergunta. A resposta era ${question.shuffledOptions[correctIndex].label}.`;
-          }
+          gameState.answers[index] = { choiceIndex, correct: false, pieceIndex: null, revealed: true };
+          liveStatus.textContent = ui(`Fim das tentativas para esta pergunta. A resposta era ${question.shuffledOptions[correctIndex].label}.`, `No tries left for this question. The answer was ${question.shuffledOptions[correctIndex].label}.`);
         } else {
-          gameState.pendingElaineHint = question;
-          liveStatus.textContent = `Quase! Tente mais uma vez. Você ainda tem ${attemptsLeft} ${attemptsLeft === 1 ? "tentativa" : "tentativas"} nesta pergunta.`;
+          liveStatus.textContent = ui(`Quase! Tente mais uma vez. Você ainda tem ${attemptsLeft} ${attemptsLeft === 1 ? "tentativa" : "tentativas"} nesta pergunta.`, `Almost! Try again. You have ${attemptsLeft} ${attemptsLeft === 1 ? "try" : "tries"} left for this question.`);
         }
       }
-      paint(deferred);
+      paint(false);
       if (correct) window.requestAnimationFrame(() => animatePieceArrival(pieceId));
-      if (!correct) remindElaineCanHelp({ deferred, resolved: Boolean(gameState.answers[index]) });
-      if (deferred) return;
+      if (!correct) remindElaineCanHelp({ resolved: Boolean(gameState.answers[index]) });
+      if (!correct && gameState.answers[index]?.revealed) {
+        window.setTimeout(() => {
+          if (gameState.screen === "question" && gameState.questionIndex === index && gameState.answers[index]?.revealed) advanceGameQuestion();
+        }, 2200);
+        return;
+      }
       window.requestAnimationFrame(() => {
         const target = gameState.answers[index]
           ? gameRoot.querySelector(".mini-game-next")
@@ -1074,8 +1170,8 @@
     if (!mobileMenuToggle) return;
     tabList.classList.remove("is-open");
     mobileMenuToggle.setAttribute("aria-expanded", "false");
-    mobileMenuToggle.setAttribute("aria-label", "Abrir menu");
-    mobileMenuToggle.querySelector("span").textContent = "Menu";
+    mobileMenuToggle.setAttribute("aria-label", ui("Abrir menu", "Open menu"));
+    mobileMenuToggle.querySelector("span").textContent = ui("Menu", "Menu");
     mobileMenuToggle.querySelector("path").setAttribute("d", "M4 6h16M4 12h16M4 18h16");
     if (restoreFocus) mobileMenuToggle.focus();
   }
@@ -1084,8 +1180,8 @@
     const open = mobileMenuToggle.getAttribute("aria-expanded") !== "true";
     mobileMenuToggle.setAttribute("aria-expanded", String(open));
     tabList.classList.toggle("is-open", open);
-    mobileMenuToggle.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
-    mobileMenuToggle.querySelector("span").textContent = open ? "Fechar" : "Menu";
+    mobileMenuToggle.setAttribute("aria-label", open ? ui("Fechar menu", "Close menu") : ui("Abrir menu", "Open menu"));
+    mobileMenuToggle.querySelector("span").textContent = open ? ui("Fechar", "Close") : ui("Menu", "Menu");
     mobileMenuToggle.querySelector("path").setAttribute("d", open ? "M5 5l14 14M19 5 5 19" : "M4 6h16M4 12h16M4 18h16");
     if (open) window.requestAnimationFrame(() => tabButtons.get(currentTab)?.focus({ preventScroll: true }));
   });
@@ -1111,14 +1207,22 @@
     const percent = Math.round((count / total) * 100);
     routeFill.style.width = `${percent}%`;
     routeValue.textContent = `${percent}%`;
-    routeDetail.textContent = `${count} de ${total} missões conhecidas`;
+    routeDetail.textContent = isEnglish
+      ? `${count} of ${total} missions explored`
+      : `${count} de ${total} missões conhecidas`;
     routeBar.setAttribute("aria-valuenow", String(count));
     routeBar.setAttribute("aria-valuemax", String(total));
-    routeBar.setAttribute("aria-valuetext", `${percent} por cento, ${count} de ${total} missões conhecidas`);
+    routeBar.setAttribute("aria-valuetext", isEnglish
+      ? `${percent} percent, ${count} of ${total} missions explored`
+      : `${percent} por cento, ${count} de ${total} missões conhecidas`);
     const complete = count === total;
     const miniGameTab = tabButtons.get("mini-game");
     miniGameTab?.setAttribute("aria-disabled", String(!complete));
-    if (miniGameTab) miniGameTab.title = complete ? "Mini game liberado" : `Conheça os ${total} equipamentos para liberar o Mini game`;
+    if (miniGameTab) miniGameTab.title = complete
+      ? ui("Mini game liberado", "Mini game unlocked")
+      : isEnglish
+        ? `Explore all ${total} spacecraft to unlock the mini game`
+        : `Conheça os ${total} equipamentos para liberar o Mini game`;
     completionBanner.hidden = !complete || miniGameAccessed;
     if (complete) {
       document.getElementById("completion-title").textContent = DATA.progress.completedTitle;
@@ -1137,22 +1241,22 @@
 
   // Mission detail dialog. Technical sheets open on a separate action.
   function dialogCloseButton() {
-    const close = button("Fechar", "button button--quiet", () => dialog.close());
-    close.setAttribute("aria-label", "Fechar detalhes");
+    const close = button(ui("Fechar", "Close"), "button button--quiet dialog-close-bottom", () => dialog.close());
+    close.setAttribute("aria-label", ui("Fechar detalhes", "Close details"));
     return close;
   }
 
   function openDestination(destination) {
     const validMissions = destination.missionIds.map((id) => missionsById.get(id)).filter(Boolean);
     if (!validMissions.length) return;
-    setElaine(`Destino escolhido: ${destination.label}. Qual explorador vamos conhecer?`);
+    setElaine(ui(`Destino escolhido: ${destination.label}. Qual explorador vamos conhecer?`, `Destination selected: ${destination.label}. Which explorer shall we meet?`));
     dialogContent.replaceChildren();
     const header = el("header", "dialog-heading");
     const titleBlock = el("div", "");
-    const title = el("h2", "dialog-title", `Rota para ${destination.label}`);
+    const title = el("h2", "dialog-title", ui(`Rota para ${destination.label}`, `Route to ${destination.label}`));
     title.id = "dialog-title";
     titleBlock.append(el("p", "eyebrow", destination.note), title, el("p", "panel-intro", destination.description));
-    header.append(titleBlock, dialogCloseButton());
+    header.append(titleBlock);
     dialogContent.append(header);
     const choices = el("div", "destination-missions");
     validMissions.forEach((mission) => {
@@ -1164,65 +1268,67 @@
       choices.append(choice);
     });
     dialogContent.append(choices);
+    dialogContent.append(dialogCloseButton());
     dialog.showModal();
   }
 
   function openMission(id) {
     const mission = missionsById.get(id);
     if (!mission) return;
+    if (dialog.open) dialog.close();
     markMissionVisited(id);
-    setElaine(`Bela escolha! ${mission.name} foi enviada para ${mission.category.toLowerCase()}. Vamos ver como ela trabalhou.`);
+    setElaine(ui(`Bela escolha! ${mission.name} foi enviada para ${mission.category.toLowerCase()}. Vamos ver como ela trabalhou.`, `Great choice! ${mission.name} traveled to ${mission.category}. Let’s see how it worked.`));
     dialogContent.replaceChildren();
     const header = el("header", "dialog-heading");
     const titleBlock = el("div", "");
     const title = el("h2", "dialog-title", mission.name);
     title.id = "dialog-title";
     titleBlock.append(el("p", "eyebrow", `${mission.category} · ${mission.label}`), title);
-    header.append(titleBlock, dialogCloseButton());
+    header.append(titleBlock);
     dialogContent.append(header, makePhoto(mission));
     const missionLede = el("p", "dialog-lede");
     missionLede.textContent = mission.summary;
     dialogContent.append(missionLede);
-    dialogContent.append(el("p", "mission-story__narrator-note", "Nilo é o guia narrador desta exposição. Sua voz é imaginada; os acontecimentos e dados vêm das fontes citadas."));
+    dialogContent.append(el("p", "mission-story__narrator-note", ui("Nilo é o guia narrador desta exposição. Sua voz é imaginada; os acontecimentos e dados vêm das fontes citadas.", "Nilo is the narrator guiding this exhibit. His voice is imagined; the events and data come from the cited sources.")));
     const storyList = el("div", "mission-story");
     mission.story.forEach((chapter, index) => {
       const chapterCard = el("article", "mission-story__chapter");
-      chapterCard.append(el("p", "eyebrow", `CAPÍTULO ${index + 1}`), el("h3", "", chapter.title));
+      chapterCard.append(el("p", "eyebrow", ui(`CAPÍTULO ${index + 1}`, `CHAPTER ${index + 1}`)), el("h3", "", chapter.title));
       const narration = el("div", "mission-story__voice");
       const speaker = el("div", "mission-story__speaker");
-      speaker.append(makeNiloAvatar(), el("span", "content-label content-label--narrative", "Nilo conta"));
+      speaker.append(makeNiloAvatar(), el("span", "content-label content-label--narrative", ui("Nilo conta", "Nilo tells the story")));
       narration.append(speaker, el("p", "", chapter.text));
       chapterCard.append(narration);
-      addSource(chapterCard, chapter.sourceId, "Fonte do capítulo");
+      addSource(chapterCard, chapter.sourceId, ui("Fonte do capítulo", "Chapter source"));
       storyList.append(chapterCard);
     });
     dialogContent.append(storyList);
     const legacy = el("article", "artifact-card");
     legacy.append(el("p", "eyebrow", mission.artifact.tag), el("h3", "", mission.artifact.title), el("p", "", mission.artifact.text));
-    addSource(legacy, mission.artifact.sourceId, "Fonte sobre o destino do equipamento");
+    addSource(legacy, mission.artifact.sourceId, ui("Fonte sobre o destino do equipamento", "Source on the equipment’s fate"));
     dialogContent.append(legacy);
-    const techToggle = button("Ver ficha técnica", "button button--outline");
+    const techToggle = button(ui("Ver ficha técnica", "View technical details"), "button button--outline");
     const tech = el("section", "technical-sheet");
     tech.hidden = true;
-    tech.append(el("h3", "", `Ficha técnica · ${mission.name}`));
+    tech.append(el("h3", "", ui(`Ficha técnica · ${mission.name}`, `Technical details · ${mission.name}`)));
     const specs = DATA.equipment[mission.id]?.specs || [];
     const list = el("dl", "spec-list");
     specs.forEach((spec) => list.append(el("dt", "", spec.label), el("dd", "", spec.value)));
     tech.append(list);
-    addSource(tech, DATA.equipment[mission.id]?.scaleSourceId || mission.sourceId, "Fonte das especificações");
+    addSource(tech, DATA.equipment[mission.id]?.scaleSourceId || mission.sourceId, ui("Fonte das especificações", "Specifications source"));
     techToggle.addEventListener("click", () => {
       tech.hidden = !tech.hidden;
-      techToggle.textContent = tech.hidden ? "Ver ficha técnica" : "Ocultar ficha técnica";
+      techToggle.textContent = tech.hidden ? ui("Ver ficha técnica", "View technical details") : ui("Ocultar ficha técnica", "Hide technical details");
       if (!tech.hidden) tech.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     });
     const footer = el("div", "dialog-actions");
     footer.append(techToggle);
-    if (miniGameUnlocked()) footer.append(button("Ir para o Mini game", "button button--primary", () => { dialog.close(); navigate("mini-game"); }));
     dialogContent.append(tech, footer);
     if (visitedMissions.size === DATA.missions.length) {
       const ready = el("p", "completion-inline", `${DATA.progress.completedTitle} ${DATA.progress.completedCopy}`);
       dialogContent.append(ready, button(DATA.progress.miniGameButton, "button button--bright", () => { dialog.close(); navigate("mini-game"); }));
     }
+    dialogContent.append(dialogCloseButton());
     dialog.showModal();
   }
 

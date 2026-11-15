@@ -152,10 +152,10 @@ window.MISSION_DATA = {
   },
 
   tabs: [
-    { id: "inicio", label: "Início", icon: "home", title: "Além da Terra: explorando a história das missões espaciais", intro: "Conheça cinco missões à Lua e a Marte. Descubra o que seus equipamentos revelaram e como ajudaram a impulsionar a exploração espacial.", elaineLines: ["Lua ou Marte? Escolha um destino e começamos a exploração.", "Cada equipamento tem uma história. Qual delas você quer descobrir primeiro?", "Pronto para embarcar? Toque em um destino para conhecer suas missões."] },
+    { id: "inicio", label: "Início", icon: "home", title: "Além da Terra: explorando a história das missões espaciais", intro: "Conheça cinco missões à Lua e a Marte. Descubra o que os equipamentos “esquecidos” revelaram e como ajudaram a impulsionar a exploração espacial.", elaineLines: ["Lua ou Marte? Escolha um destino e começamos a exploração.", "Cada equipamento tem uma história. Qual delas você quer descobrir primeiro?", "Pronto para embarcar? Toque em um destino para conhecer suas missões."] },
     { id: "linha-do-tempo", label: "Linha do tempo", icon: "timeline", title: "Uma missão acontece em etapas", intro: "Escolha um capítulo para iniciarmos a jornada!", elaineLines: ["Vamos escolher um capítulo e começar nossa jornada!", "Cada etapa revela uma parte diferente da missão. Por onde começamos?", "Lançamento, viagem ou descobertas? Você escolhe o próximo capítulo."] },
     { id: "equipamentos", label: "Equipamentos", icon: "rover", title: "Conheça quem foi explorar", intro: "Cada equipamento foi construído para uma tarefa. Abra um cartão para conhecer sua missão, sua história e sua ficha técnica.", elaineLines: ["Repare nas imagens e nos nomes: cada explorador tinha um trabalho diferente.", "Abra um cartão para ver como cada equipamento funcionava.", "Alguns foram feitos para andar; outros, para pousar e medir o ambiente."] },
-    { id: "mapa", label: "Mapa", icon: "map", title: "Onde essas histórias aconteceram?", intro: "Cada cor identifica uma missão. Os trajetos são esquemáticos e não mostram distâncias reais.", elaineLines: ["Os pontos mostram onde cada missão explorou ou passou.", "Toque em um local do mapa para abrir a missão correspondente.", "O LRV percorreu a região Hadley-Apennine com os astronautas da Apollo 15."] },
+    { id: "mapa", label: "Mapa", icon: "map", title: "Onde essas histórias aconteceram?", intro: "Cada cor identifica uma missão. Os trajetos são esquemáticos e não mostram distâncias reais.", elaineLines: ["Os pontos mostram onde cada missão explorou ou passou.", "Toque em um ponto colorido para destacar a órbita daquele local.", "O LRV percorreu a região Hadley-Apennine com os astronautas da Apollo 15."] },
     { id: "escala", label: "Escala", icon: "scale", title: "Tamanhos de verdade, em comparação", intro: "Veja quanto espaço alguns exploradores ocupavam. As barras usam a mesma escala; os valores são aproximados e têm fonte.", elaineLines: ["Compare as barras para perceber a diferença de tamanho entre os equipamentos.", "Uma ferramenta pequena também pode fazer grandes descobertas.", "Use a mesma escala para comparar os exploradores desta exposição."] },
     { id: "mini-game", label: "Mini game", icon: "robot", title: "Coloque em prática o que aprendeu!", intro: "Acerte as perguntas para montar seu robô explorador!", elaineLines: ["Cada peça ajuda um explorador a fazer ciência.", "Vamos montar um robô com as pistas das missões.", "Leia com calma: cada resposta revela como a exploração funciona."] },
     { id: "glossario", label: "Glossário", icon: "book", title: "Palavras de uma missão espacial", intro: "Termos científicos e de engenharia explicados em linguagem simples.", elaineLines: ["Encontrou uma palavra nova? Aqui a gente explica sem complicação.", "Explore os termos e depois volte às missões para reconhecê-los.", "A ciência tem palavras especiais; vamos descobrir o que elas significam."] },
@@ -271,11 +271,11 @@ window.MISSION_DATA = {
   },
 
   mapPoints: [
-    { id: "ares-vallis", label: "Ares Vallis", world: "Marte", missionIds: ["sojourner"], color: "#65c7e8", colorName: "azul", x: 19, y: 33 },
-    { id: "chryse", label: "Chryse Planitia", world: "Marte", missionIds: ["viking"], color: "#b69cff", colorName: "violeta", x: 40, y: 49 },
-    { id: "meridiani", label: "Meridiani Planum", world: "Marte", missionIds: ["opportunity"], color: "#86dba4", colorName: "verde", x: 20, y: 70 },
-    { id: "tranquility", label: "Mar da Tranquilidade", world: "Lua", missionIds: ["apollo-11"], color: "#ffcf70", colorName: "dourado", x: 61, y: 65 },
-    { id: "hadley-apennine", label: "Hadley-Apennine", world: "Lua", missionIds: ["lrv-apollo-15"], color: "#f28f77", colorName: "coral", x: 81, y: 34 }
+    { id: "ares-vallis", label: "Ares Vallis", world: "Marte", missionIds: ["sojourner"], color: "#65c7e8", colorName: "azul", x: 11, y: 34 },
+    { id: "chryse", label: "Chryse Planitia", world: "Marte", missionIds: ["viking"], color: "#b69cff", colorName: "violeta", x: 46, y: 43 },
+    { id: "meridiani", label: "Meridiani Planum", world: "Marte", missionIds: ["opportunity"], color: "#86dba4", colorName: "verde", x: 27, y: 73 },
+    { id: "tranquility", label: "Mar da Tranquilidade", world: "Lua", missionIds: ["apollo-11"], color: "#ffcf70", colorName: "dourado", x: 77, y: 70 },
+    { id: "hadley-apennine", label: "Hadley-Apennine", world: "Lua", missionIds: ["lrv-apollo-15"], color: "#f28f77", colorName: "coral", x: 67, y: 30 }
   ],
 
   glossary: [
