@@ -1,0 +1,60 @@
+<!-- Interface do diário. O conteúdo didático dos painéis é fornecido por js/data.js. -->
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="generator" content="Codex com auxílio de IA">
+    <meta name="description" content="Explore histórias de cinco missões à Lua e a Marte: seus equipamentos, descobertas científicas e legado, com mapa interativo, cronologia, curiosidades, quiz e fontes oficiais.">
+    <meta name="theme-color" content="#121716">
+    <title>Além da Terra: explorando a história das missões espaciais</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/experience.css">
+    <script defer src="js/data.js"></script>
+    <script defer src="js/script.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#tab-panels">Pular para o conteúdo</a>
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="wordmark" href="#inicio" aria-label="Diário de bordo, voltar ao início">
+          <span class="wordmark__star" aria-hidden="true">✦</span>
+          <span class="wordmark__text"><strong>DIÁRIO</strong> <span>DE BORDO</span></span>
+        </a>
+        <div class="route-progress" aria-label="Progresso da rota das missões">
+          <div class="route-progress__top"><span id="route-progress-label">Rota das missões</span><span id="route-progress-value">0%</span></div>
+          <div class="route-progress__track" role="progressbar" aria-label="Missões conhecidas" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" id="route-progress-bar"><span id="route-progress-fill"></span></div>
+          <span class="route-progress__detail" id="route-progress-detail">0 de 5 missões conhecidas</span>
+        </div>
+        <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-controls="tab-list" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <span>Menu</span>
+        </button>
+        <nav id="tab-list" class="tab-list" role="tablist" aria-label="Áreas do diário" aria-orientation="horizontal"></nav>
+      </header>
+
+      <div id="completion-banner" class="completion-banner" role="status" aria-live="polite" hidden>
+        <div><strong id="completion-title"></strong><span id="completion-copy"></span></div>
+        <button class="button button--bright" id="completion-quiz" type="button"></button>
+      </div>
+
+      <main id="tab-panels" class="tab-panels" tabindex="-1" aria-label="Conteúdo do diário"></main>
+
+      <aside class="elaine-dock" aria-label="Elaine" hidden>
+        <div class="elaine-dock__bubble" id="elaine-message" role="status" aria-live="polite" hidden></div>
+        <button class="elaine-dock__button" id="elaine-toggle" type="button" aria-expanded="false" aria-controls="elaine-message" aria-label="Alternar falas da Elaine">
+          <span class="elaine-dock__portrait" aria-hidden="true">
+            <img src="assets/elaine-astronaut-clean.png" alt="" loading="eager" decoding="async">
+          </span>
+          <span class="elaine-dock__hint-count" id="elaine-hint-count" aria-hidden="true" hidden></span>
+        </button>
+      </aside>
+
+      <dialog id="app-dialog" class="app-dialog" aria-labelledby="dialog-title">
+        <div id="dialog-content"></div>
+      </dialog>
+    </div>
+  </body>
+</html>
