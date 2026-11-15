@@ -98,6 +98,7 @@
     })
     : sourceGameQuestions;
   const gameRoundLength = 10;
+  const gameAttemptLimit = 2;
   const gameHintLimit = 3;
   const gamePieces = [
     { id: "chassis", label: ui("Corpo e chassi", "Body and chassis") },
@@ -851,7 +852,7 @@
       const index = gameState.questionIndex;
       const question = gameState.questions[index];
       const questionCount = gameState.questions.length;
-      const attemptLimit = 2;
+      const attemptLimit = gameAttemptLimit;
       const mission = missionsById.get(question.equipmentId);
       const panel = el("section", "mini-game-play mini-game-question-panel");
       const progress = el("div", "mini-game-progress");
@@ -1017,7 +1018,7 @@
         if (!gameState.wrongChoices[index]) gameState.wrongChoices[index] = [];
         if (gameState.wrongChoices[index].includes(choiceIndex)) return;
         gameState.wrongChoices[index].push(choiceIndex);
-        const attemptLimit = 2;
+        const attemptLimit = gameAttemptLimit;
         const attemptsLeft = attemptLimit - gameState.wrongChoices[index].length;
         if (attemptsLeft <= 0) {
           gameState.answers[index] = { choiceIndex, correct: false, pieceIndex: null, revealed: true };

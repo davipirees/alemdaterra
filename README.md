@@ -1,6 +1,6 @@
 # Diário de bordo
 
-Exposição educativa interativa sobre cinco equipamentos e missões da Lua e de Marte: Sojourner, Viking, Opportunity, o LRV da Apollo 15 e Apollo 11. Em vez de uma página longa, a interface abre uma área por vez. O conteúdo usa HTML, CSS e JavaScript puros, sem bibliotecas ou etapa de build. Abra `index.html` em um navegador moderno.
+Exposição educativa interativa sobre cinco equipamentos e missões da Lua e de Marte: Sojourner, Viking, Opportunity, o LRV da Apollo 15 e Apollo 11. Em vez de uma página longa, a interface abre uma área por vez. O conteúdo usa HTML, CSS e JavaScript puros, sem bibliotecas ou etapa de build. A primeira visita abre em inglês; Português (Brasil) pode ser escolhido no seletor do cabeçalho. Abra `index.html` em um navegador moderno.
 
 ## Navegação
 
@@ -8,7 +8,7 @@ O menu segue o padrão de abas WAI-ARIA. Cada painel é criado a partir de `js/d
 
 ## Responsividade
 
-O layout é pensado primeiro para celular, usa grades fluidas e não depende de rolagem horizontal no conteúdo. Os pontos de quebra atuais são 480 px (celular pequeno), 680 px (celular/tablet), 768 px (tablet), 1024 px (tablet/desktop), 1440 px (desktop largo) e 1920 px (monitores ultrawide). O menu recolhível fica restrito a telas de até 680 px; em tablets, todas as abas permanecem em uma linha, com rolagem horizontal apenas se o espaço disponível for estreito. A grade de equipamentos mostra os cinco cartões em uma linha a partir de 1280 px e reduz o número de colunas em telas menores. Há ajustes para paisagem com pouca altura, áreas seguras do aparelho, alvos de toque de pelo menos 44 px e impressão da aba aberta.
+O layout é pensado primeiro para celular, usa grades fluidas e evita rolagem horizontal no conteúdo. Há ajustes em 360 px e 480 px para telas compactas, 680 px para o menu móvel, 1024 px para tablets, 1280 px e 1440 px para telas maiores, e 1920 px para monitores ultrawide. Em tablets, as abas permanecem em uma linha e podem rolar horizontalmente quando o espaço é estreito. A grade de equipamentos mostra os cinco cartões em uma linha a partir de 1280 px e reduz o número de colunas em telas menores. Há ajustes para paisagem com pouca altura, áreas seguras do aparelho, alvos de toque de pelo menos 44 px e impressão da aba aberta.
 
 Para ajustar um ponto de quebra, edite os blocos `@media` no fim de `css/style.css` e `css/experience.css`; mantenha a ordem mobile-first e confira o menu, o hero, as grades, o mapa e o diálogo em retrato e paisagem. A escala base aumenta em telas a partir de 1920 px, enquanto os painéis continuam limitados a uma largura de leitura confortável.
 
@@ -16,17 +16,17 @@ Na linha do tempo, as missões aparecem pela data de lançamento — Apollo 11, 
 
 Os capítulos completos de cada missão são narrados por Nilo, um guia robótico fictício. O texto avisa que a voz é imaginada; datas, ações e descobertas vêm dos registros oficiais linkados em cada capítulo. As falas não são apresentadas como transmissões reais dos equipamentos.
 
-A barra de rota acompanha quantas histórias de missão diferentes foram abertas na sessão atual. Ao conhecer os cinco equipamentos, o Mini game é liberado; a faixa de conclusão some quando a pessoa acessa essa aba. Até lá, a navegação mostra quantos equipamentos faltam; abrir `#mini-game` diretamente leva ao início se o jogo ainda estiver bloqueado. O jogo usa um banco editável com 15 perguntas em `js/mini-game-data.js`: três por equipamento, quatro alternativas cada e explicações curtas. Cada partida sorteia uma pergunta de cada equipamento, mistura a ordem das perguntas e das alternativas e entrega uma peça do robô por resposta certa. Depois de dois erros, a pergunta volta ao fim da fila; na revisão, há até três tentativas. Elaine oferece três dicas por partida e pergunta se a pessoa quer uma quando erra. As fontes completas ficam na aba Fontes. O recorde é guardado apenas em `localStorage`; o andamento da partida e o nome do robô ficam na tela e não são enviados a nenhum servidor.
+A barra de rota acompanha quantas histórias de missão diferentes foram abertas na sessão atual. Ao conhecer os cinco equipamentos, o Mini game é liberado; a faixa de conclusão some quando a pessoa acessa essa aba. Até lá, a navegação mostra quantos equipamentos faltam; abrir `#mini-game` diretamente leva ao início se o jogo ainda estiver bloqueado. O banco em `js/mini-game-data.js` tem 15 perguntas, três por equipamento, com quatro alternativas e explicações. Cada partida escolhe dez perguntas sem repetição, incluindo ao menos uma de cada missão, e entrega uma das seis peças do robô por resposta certa. Uma segunda resposta errada encerra aquela pergunta e avança após mostrar a explicação; não há botão para pular perguntas. Elaine oferece três dicas por partida. O campo para dar nome ao robô só aparece quando as seis peças estão completas. O recorde é guardado apenas em `localStorage`; o andamento da partida e o nome do robô ficam na tela e não são enviados a nenhum servidor.
 
-O Mini game é jogável com toque, mouse e teclado. Tab e Enter/Espaço percorrem e ativam os botões; as teclas 1 a 4 escolhem uma alternativa quando o foco está no jogo. A região de status anuncia resposta, explicação e peça desbloqueada. O robô é um desenho vetorial original em SVG com título, descrição e cinco conjuntos de peças identificadas; painéis solares, chassi, rodas, antena e braço científico se acendem conforme são montados. O nome digitado não persiste. A animação de encaixe e a comemoração respeitam `prefers-reduced-motion`.
+O Mini game é jogável com toque, mouse e teclado. Tab e Enter/Espaço percorrem e ativam os botões; as teclas 1 a 4 escolhem uma alternativa quando o foco está no jogo. A região de status anuncia resposta, explicação e peça desbloqueada. O robô é um desenho vetorial original em SVG com título, descrição e seis conjuntos de peças identificadas: chassi, painéis solares, rodas, antena, braço científico e câmeras. O nome digitado não persiste. A animação de encaixe e a comemoração respeitam `prefers-reduced-motion`.
 
-O mapa mostra Marte, Lua, órbitas e cinco pontos coloridos, com uma legenda curta logo abaixo para identificar a cor de cada missão. As linhas orbitais giram devagar como demonstração; os pontos não se movem. Com movimento reduzido, as órbitas apenas variam suavemente de opacidade. Os pontos são botões acessíveis: tocar, clicar ou focar e pressionar Enter abre a missão correspondente. Na linha do tempo, cada etapa mostra o fato interessante com o retrato redondo de Elaine e um link “Saiba mais” para a fonte relacionada. A bolinha flutuante fica oculta nessa aba. As 30 curiosidades ficam separadas da explicação principal. A home mantém apenas o hero, sem cartões extras abaixo dele, e a personagem não aparece como retrato flutuante nessa aba. O hero ocupa melhor a altura disponível em telas médias e grandes. Elaine usa falas diferentes conforme a aba e a interação; no Mini game, ela funciona como assistente e fornece três dicas contextuais por partida.
+O mapa mostra Marte, a Lua, suas órbitas e cinco pontos coloridos, com uma legenda curta logo abaixo para identificar cada missão. As linhas orbitais giram devagar como demonstração; os pontos não se movem. Tocar, clicar ou focar um ponto e pressionar Enter destaca a órbita e o corpo celeste correspondente; o mapa não abre a missão. Com movimento reduzido, as órbitas apenas variam suavemente de opacidade. Na linha do tempo, cada etapa mostra o fato interessante com o retrato redondo de Elaine e um link “Saiba mais” para a fonte relacionada. A bolinha flutuante fica oculta nessa aba. As 30 curiosidades ficam separadas da explicação principal. A home mantém apenas o hero, sem cartões extras abaixo dele, e a personagem não aparece como retrato flutuante nessa aba. O hero ocupa melhor a altura disponível em telas médias e grandes. Elaine usa falas diferentes conforme a aba e a interação; no Mini game, ela funciona como assistente e fornece três dicas contextuais por partida.
 
 ## O que foi enxugado
 
 - A exposição agora cobre apenas Lua e Marte; a missão Deep Impact, o destino Cometas e seus dados, pergunta e imagem foram retirados.
 - A aba Descobertas e seus cartões redundantes foram removidos; as descobertas principais continuam dentro das histórias das missões e da linha do tempo.
-- O mapa foi reduzido às órbitas de Marte e da Lua e a pontos coloridos clicáveis; uma legenda curta identifica a cor de cada missão.
+- O mapa mostra as órbitas de Marte e da Lua; os pontos coloridos destacam o destino e uma legenda identifica cada missão.
 - A pista de bordo foi retirada da home para manter a primeira tela mais compacta.
 - A navegação compacta foi ajustada para celulares; tablets e telas maiores exibem as abas diretamente no cabeçalho.
 
@@ -44,11 +44,17 @@ As cinco histórias detalhadas, os capítulos, a ficha técnica, o mapa, o gloss
 
 Ao cadastrar uma foto, informe `imageUrl`, `imageAlt`, `caption`, `credit` e `photoSourceId`. O carregador aceita arquivos locais em `assets/` e imagens HTTPS nos domínios oficiais incluídos na lista segura de `js/script.js`. Se a imagem falhar, aparece uma indicação e o link de origem continua disponível. As fotografias de arquivo mantêm seus créditos. A ilustração de Elaine não usa logotipos; o projeto não tem afiliação com a NASA.
 
+## Verificações
+
+Execute `node --test tests/site-smoke.test.js` para conferir a estrutura dos dados nos dois idiomas, as referências das fontes e do mapa, a presença das imagens e a geração de rodadas sem perguntas repetidas.
+
 ## Arquivos
 
 - `index.html`: estrutura do aplicativo, cabeçalho fixo, barra de rota, menu, guia Elaine e diálogo acessível.
 - `css/style.css` e `css/experience.css`: tokens, navegação responsiva, abas, cartões, mapa, Mini game, movimento da Elaine e preferências de movimento.
 - `js/data.js`: texto, fatos, dados técnicos, imagens, fontes e abas.
+- `js/locales.js`: conteúdo traduzido para inglês, combinado aos dados e às imagens compartilhadas.
 - `js/mini-game-data.js`: banco de perguntas e explicações do Mini game.
 - `js/script.js`: renderização dos painéis, navegação, foco, diálogo, armazenamento de sessão, progresso e Mini game.
+- `tests/site-smoke.test.js`: verificações de integridade dos dados e das rodadas do Mini game, usando o test runner nativo do Node.js.
 - `assets/`: fotografias do arquivo NASA/NSSDC, a ilustração transparente de Elaine e o fundo espacial ilustrativo.

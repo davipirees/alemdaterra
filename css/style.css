@@ -409,7 +409,6 @@ button:active:not(:disabled), .button:active:not(:disabled), .tab-button:active,
 .mission-photo__caption,
 .timeline-story__text,
 .timeline-guide__fact,
-.mission-story__fact,
 .mission-story__voice p,
 .artifact-card > p:not(.eyebrow),
 .dialog-lede { font-size: 1rem; line-height: 1.55; }

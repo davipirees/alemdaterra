@@ -73,7 +73,6 @@
 .nilo-avatar__head { fill: #14272f; }
 .nilo-avatar__signal, .nilo-avatar__eye { fill: var(--blue); stroke: none; }
 .mission-story__voice p { margin: .45rem 0 0; color: var(--ink); font: 500 1rem/1.55 var(--serif); }
-.mission-story__fact { margin: .5rem 0 0; }
 .timeline-story__missions { grid-area: missions; display: flex; flex-wrap: wrap; gap: 9px; margin-top: var(--space-4); padding: var(--space-3) 0; }
 .timeline-unlock-note { margin: 0; color: var(--quiet); font-size: .875rem; line-height: 1.5; }
 .timeline-source { grid-area: source; margin-bottom: var(--space-2); }
@@ -389,7 +388,6 @@
 .mission-card__summary,
 .mission-story__chapter p:not(.eyebrow),
 .mission-story__voice p,
-.mission-story__fact,
 .artifact-card > p:not(.eyebrow),
 .map-key__item,
 .scale-footnote,
