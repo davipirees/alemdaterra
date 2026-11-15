@@ -50,7 +50,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .wordmark__text { font-size: 12px; letter-spacing: .17em; }
 .wordmark__text strong { color: var(--blue-strong); font-weight: 900; }
 .wordmark__text > span { color: var(--muted); font-weight: 500; }
-.header-context { grid-column: 1; grid-row: 1; display: grid; gap: 3px; justify-self: start; align-self: center; width: min(100%, 14rem); min-height: 3.25rem; margin: 0 0 0 -.7rem; padding: .4rem .75rem; border: 1px solid rgba(168,221,242,.12); border-left: 3px solid var(--blue-strong); border-radius: .5rem; background: rgba(168,221,242,.035); color: var(--muted); line-height: 1.25; align-content: center; transform: translateY(16px); }
+.header-context { grid-column: 1; grid-row: 1; display: grid; gap: 3px; justify-self: start; align-self: center; width: min(100%, 13.5rem); min-height: 3rem; margin: 0 0 0 -.7rem; padding: .35rem .7rem; border: 1px solid rgba(168,221,242,.12); border-left: 3px solid var(--blue-strong); border-radius: .5rem; background: rgba(168,221,242,.035); color: var(--muted); line-height: 1.25; align-content: center; transform: translateY(16px); }
 .header-context span { color: var(--blue); font-size: .85rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
 .header-context strong { font-size: .98rem; font-weight: 700; }
 .route-progress { grid-column: 3; grid-row: 1; justify-self: end; width: min(100%, 310px); }
@@ -371,7 +371,7 @@ button:active:not(:disabled), .button:active:not(:disabled), .tab-button:active,
 }
 
 @media (pointer: coarse) {
-  .tab-button, .map-point, .timeline-mission, .timeline-step, .quiz-answer { min-height: 2.75rem; }
+  .tab-button, .map-point, .timeline-mission, .timeline-step, .mini-game-answer { min-height: 2.75rem; }
 }
 
 @media print {
@@ -411,7 +411,7 @@ button:active:not(:disabled), .button:active:not(:disabled), .tab-button:active,
 .mission-story__voice p,
 .artifact-card > p:not(.eyebrow),
 .dialog-lede { font-size: 1rem; line-height: 1.55; }
-.button, .text-button, .tab-button, .timeline-mission, .timeline-step, .map-point, .quiz-answer, .home-hotspot, .mobile-menu-toggle {
+.button, .text-button, .tab-button, .timeline-mission, .timeline-step, .map-point, .mini-game-answer, .home-hotspot, .mobile-menu-toggle {
   min-height: 2.75rem;
 }
 .map-point { min-width: 2.75rem; }

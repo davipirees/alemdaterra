@@ -7,9 +7,18 @@
 
   const byId = (items, id) => items.find((item) => item.id === id);
   const missionsById = new Map(DATA.missions.map((mission) => [mission.id, mission]));
-  const quizById = new Map(DATA.quiz.map((question) => [question.id, question]));
-  const quizRoundLength = Math.min(8, DATA.quiz.length);
-  const quizHintsPerRound = 3;
+  const gameQuestions = Array.isArray(window.MINI_GAME_QUESTIONS) ? window.MINI_GAME_QUESTIONS : [];
+  const gameRoundLength = 8;
+  const gameHintLimit = 3;
+  const gameAttemptLimit = 3;
+  const gamePieces = [
+    { id: "chassis", label: "Corpo e chassi" },
+    { id: "power", label: "Painéis de energia" },
+    { id: "wheels", label: "Rodas" },
+    { id: "antenna", label: "Antena" },
+    { id: "instrument", label: "Braço científico" }
+  ];
+  const bestScoreKey = "diario-mini-game-recorde";
   const sourcesById = new Map(DATA.metadata.sources.map((source) => [source.id, source]));
   const tabsById = new Map(DATA.tabs.map((tab) => [tab.id, tab]));
   const el = (tag, className, text) => {
@@ -47,28 +56,6 @@
     const link = sourceLink(sourceId, label);
     if (link) parent.append(link);
   };
-  const sourceSiteName = (sourceUrl) => {
-    try {
-      const host = new URL(sourceUrl).hostname.toLowerCase();
-      if (host.includes("nssdc")) return "NSSDC/NASA";
-      if (host.startsWith("science.nasa.gov")) return "NASA Science";
-      if (host.includes("jpl.nasa.gov")) return "NASA/JPL";
-      if (host.endsWith("nasa.gov")) return "NASA";
-      return host;
-    } catch (_) { return "site oficial"; }
-  };
-  const quizAttribution = (sourceIds) => {
-    const validSources = sourceIds.map((id) => sourcesById.get(id)).filter(Boolean);
-    if (!validSources.length) return null;
-    const line = el("p", "quiz-attribution");
-    line.append(document.createTextNode("De acordo com "));
-    validSources.forEach((source, index) => {
-      if (index > 0) line.append(document.createTextNode(index === validSources.length - 1 ? " e " : ", "));
-      const link = sourceLink(source.id, `${sourceSiteName(source.url)} — ${source.title}`);
-      if (link) line.append(link);
-    });
-    return line;
-  };
   const makeIcon = (key) => {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
@@ -82,7 +69,7 @@
       map: ["M3 6.5 8 4l8 2 5-2.5v14L16 20l-8-2-5 2.5v-14Z", "M8 4v14", "M16 6v14", "M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"],
       scale: ["M12 4v16", "M5 7h14", "M7 7l-3 6h6L7 7Z", "M17 7l-3 6h6l-3-6Z", "M8 20h8"],
       spark: ["m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z", "m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"],
-      quiz: ["M9.5 9a2.7 2.7 0 1 1 4.5 2c-1.2 1-2 1.2-2 3", "M12 18h.01", "M4 4h16v16H4z"],
+      robot: ["M8 7V4h8v3", "M5 8h14v11H5z", "M9 12h.01", "M15 12h.01", "M9 16h6", "M3 11v5", "M21 11v5"],
       book: ["M4 5.5c3-1.5 5.7-1.1 8 1v13c-2.3-2.1-5-2.5-8-1v-13Z", "M20 5.5c-3-1.5-5.7-1.1-8 1v13c2.3-2.1 5-2.5 8-1v-13Z"],
       source: ["M6 3h9l4 4v14H6z", "M15 3v5h4", "M9 12h7", "M9 16h7"],
       info: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z", "M12 11v5", "M12 8h.01"]
@@ -91,6 +78,28 @@
       const path = document.createElementNS("http://www.w3.org/2000/svg", d.includes("Z") && d.includes("a") ? "path" : "path");
       path.setAttribute("d", d);
       svg.append(path);
+    });
+    return svg;
+  };
+
+  const makeNiloAvatar = () => {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 40 40");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    svg.classList.add("nilo-avatar");
+    const shapes = [
+      ["line", { x1: "20", y1: "5", x2: "20", y2: "10" }],
+      ["circle", { cx: "20", cy: "4", r: "2", class: "nilo-avatar__signal" }],
+      ["rect", { x: "5", y: "10", width: "30", height: "24", rx: "8", class: "nilo-avatar__head" }],
+      ["circle", { cx: "15", cy: "20", r: "2", class: "nilo-avatar__eye" }],
+      ["circle", { cx: "25", cy: "20", r: "2", class: "nilo-avatar__eye" }],
+      ["path", { d: "M14 26 Q20 30 26 26" }]
+    ];
+    shapes.forEach(([tag, attrs]) => {
+      const shape = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attrs).forEach(([name, value]) => shape.setAttribute(name, value));
+      svg.append(shape);
     });
     return svg;
   };
@@ -129,34 +138,11 @@
   let elaineOptions = DATA.home.elaineLines || [DATA.home.elaine];
   let elaineContext = elaineOptions[0];
   let lastElaineLine = "";
-  let quizInviteShown = false;
-  let quizElaineShowingInvite = false;
   let timelineMissionIndex = 0;
   let timelinePhaseIndex = 0;
-  let quizState = normalizeQuizState(storage.read("diario-quiz-progresso", null));
-  let quizAccessed = storage.read("diario-quiz-acessado", false) === true;
-
-  function normalizeQuizState(value) {
-    const questionIds = Array.isArray(value?.questionIds)
-      ? [...new Set(value.questionIds.filter((id) => quizById.has(id)))].slice(0, quizRoundLength)
-      : [];
-    const rawAnswers = value && Array.isArray(value.answers) ? value.answers.slice(0, questionIds.length) : [];
-    const answers = rawAnswers.map((answer, index) => {
-      const choice = Number.isInteger(answer) ? answer : -1;
-      const question = quizById.get(questionIds[index]);
-      return Number.isInteger(choice) && choice >= 0 && choice < (question?.options.length || 0) ? choice : undefined;
-    });
-    const firstGap = answers.findIndex((answer) => answer === undefined);
-    if (firstGap >= 0) answers.length = firstGap;
-    while (answers.length && answers[answers.length - 1] === undefined) answers.pop();
-    const savedIndex = Number(value?.questionIndex);
-    const questionIndex = Number.isInteger(savedIndex) ? Math.max(0, Math.min(savedIndex, answers.length, questionIds.length)) : answers.length;
-    const savedHints = Number(value?.hintsRemaining);
-    const hintsRemaining = Number.isInteger(savedHints)
-      ? Math.max(0, Math.min(savedHints, quizHintsPerRound))
-      : quizHintsPerRound;
-    return { questionIds, answers, questionIndex, hintsRemaining };
-  }
+  let gameState = { screen: "intro", questions: [], answers: [], wrongChoices: [], questionIndex: 0, piecesUnlocked: 0, hintsUsed: 0, pendingElaineHint: null };
+  let bestScore = readBestScore();
+  let miniGameAccessed = storage.read("diario-mini-game-acessado", false) === true;
 
   function shuffle(items) {
     const shuffled = [...items];
@@ -167,24 +153,55 @@
     return shuffled;
   }
 
-  function createQuizRound() {
-    const onePerMission = DATA.missions.flatMap((mission) => {
-      const questions = DATA.quiz.filter((question) => question.missionId === mission.id);
-      return questions.length ? [questions[Math.floor(Math.random() * questions.length)]] : [];
+  function createGameRound() {
+    const byEquipment = new Map();
+    gameQuestions.forEach((question) => {
+      if (!byEquipment.has(question.equipmentId)) byEquipment.set(question.equipmentId, []);
+      byEquipment.get(question.equipmentId).push(question);
     });
-    const selectedIds = new Set(onePerMission.map((question) => question.id));
-    const bonusQuestions = shuffle(DATA.quiz.filter((question) => !selectedIds.has(question.id)));
-    const selected = [...onePerMission, ...bonusQuestions.slice(0, Math.max(0, quizRoundLength - onePerMission.length))];
-    return { questionIds: shuffle(selected).slice(0, quizRoundLength).map((question) => question.id), answers: [], questionIndex: 0, hintsRemaining: quizHintsPerRound };
+    const onePerEquipment = DATA.missions.flatMap((mission) => {
+      const choices = byEquipment.get(mission.id) || [];
+      return choices.length ? [choices[Math.floor(Math.random() * choices.length)]] : [];
+    });
+    const selectedIds = new Set(onePerEquipment.map((question) => question.id));
+    const additional = shuffle(gameQuestions.filter((question) => !selectedIds.has(question.id)))
+      .slice(0, Math.max(0, gameRoundLength - onePerEquipment.length));
+    const selected = shuffle([...onePerEquipment, ...additional]).slice(0, gameRoundLength);
+    return {
+      screen: "question",
+      questions: selected.map((question) => ({
+        ...question,
+        retryCount: 0,
+        shuffledOptions: shuffle(question.options.map((label, originalIndex) => ({ label, originalIndex })))
+      })),
+      answers: [],
+      wrongChoices: [],
+      questionIndex: 0,
+      piecesUnlocked: 0,
+      hintsUsed: 0,
+      pendingElaineHint: null
+    };
   }
 
-  function quizUnlocked() {
+  function readBestScore() {
+    try {
+      const score = Number(localStorage.getItem(bestScoreKey));
+      return Number.isInteger(score) ? Math.max(0, Math.min(gamePieces.length, score)) : 0;
+    } catch (_) { return 0; }
+  }
+
+  function saveBestScore(score) {
+    bestScore = Math.max(bestScore, score);
+    try { localStorage.setItem(bestScoreKey, String(bestScore)); } catch (_) { /* O jogo continua normalmente sem armazenamento. */ }
+  }
+
+  function miniGameUnlocked() {
     return visitedMissions.size >= DATA.missions.length;
   }
 
-  function announceQuizLock() {
+  function announceMiniGameLock() {
     const remaining = DATA.missions.length - visitedMissions.size;
-    showElaineForMission(`O desafio ainda está fechado. Conheça ${remaining} ${remaining === 1 ? "equipamento" : "equipamentos"} para completar a rota e liberar o quiz!`);
+    showElaineForMission(`O mini game será liberado quando você conhecer os cinco equipamentos. Faltam ${remaining} ${remaining === 1 ? "equipamento" : "equipamentos"}.`);
   }
 
   function pickElaineLine(lines) {
@@ -212,6 +229,59 @@
     elaineButton.setAttribute("aria-expanded", "true");
   }
 
+  function updateElaineHintCounter() {
+    const inMiniGame = currentTab === "mini-game";
+    const inMiniGameQuestion = inMiniGame && gameState.screen === "question";
+    elaineHintCount.hidden = !inMiniGameQuestion;
+    if (inMiniGame) {
+      const remaining = Math.max(0, gameHintLimit - gameState.hintsUsed);
+      elaineHintCount.textContent = String(remaining);
+      elaineButton.setAttribute("aria-label", inMiniGameQuestion
+        ? `Pedir uma dica à Elaine. Restam ${remaining} de ${gameHintLimit} dicas.`
+        : "Pedir ajuda à Elaine no mini game");
+    } else {
+      elaineButton.setAttribute("aria-label", "Alternar falas da Elaine");
+    }
+  }
+
+  function giveMiniGameHint() {
+    const index = gameState.questionIndex;
+    const currentQuestion = gameState.questions[index];
+    const question = gameState.pendingElaineHint || currentQuestion;
+    const hintForDeferredQuestion = question && question !== currentQuestion;
+    let message;
+    if (gameState.screen !== "question" || !currentQuestion) {
+      message = gameState.screen === "result"
+        ? "Mandou bem, tripulante! Comece outra partida quando quiser novas dicas."
+        : "Dúvida, tripulante? Posso te ajudar! Comece uma partida e toque em mim para pedir uma dica.";
+    } else if (!hintForDeferredQuestion && gameState.answers[index]) {
+      message = "Essa pergunta já foi resolvida. Na próxima, posso ajudar com uma dica!";
+    } else if (gameState.hintsUsed >= gameHintLimit) {
+      message = "Você já usou minhas três dicas nesta partida. Releia as alternativas e tente mais uma vez!";
+    } else {
+      gameState.hintsUsed += 1;
+      const context = hintForDeferredQuestion ? "Dica para a pergunta que volta no final" : `Dica ${gameState.hintsUsed} de ${gameHintLimit}`;
+      message = `${context}: ${question.hint || "Compare o trabalho do equipamento com as pistas apresentadas na pergunta."}`;
+      gameState.pendingElaineHint = null;
+    }
+    elaineMessage.textContent = message;
+    elaineMessage.hidden = false;
+    elaineButton.setAttribute("aria-expanded", "true");
+    updateElaineHintCounter();
+  }
+
+  function remindElaineCanHelp({ deferred = false, resolved = false } = {}) {
+    const remaining = Math.max(0, gameHintLimit - gameState.hintsUsed);
+    const message = resolved
+      ? "Essa pergunta já foi respondida. Na próxima, se tiver dúvida, toque em mim para pedir uma dica."
+      : remaining > 0
+        ? `${deferred ? "Essa pergunta volta no final" : "Quase, tripulante"}. Quer uma dica? Toque em mim para pedir uma. Restam ${remaining} ${remaining === 1 ? "dica" : "dicas"}.`
+        : "Quase, tripulante! Você já usou as três dicas desta partida. Tente outra alternativa ou guarde a pergunta para o final.";
+    elaineMessage.textContent = message;
+    elaineMessage.hidden = false;
+    elaineButton.setAttribute("aria-expanded", "true");
+  }
+
   function openElaine() {
     const open = elaineButton.getAttribute("aria-expanded") !== "true";
     elaineButton.setAttribute("aria-expanded", String(open));
@@ -222,52 +292,9 @@
     }
   }
 
-  function updateElaineHintControl() {
-    const isQuiz = currentTab === "quiz";
-    const quizComplete = quizState.questionIndex >= quizState.questionIds.length;
-    const questionAnswered = !quizComplete && quizState.answers[quizState.questionIndex] !== undefined;
-    const hintOpen = elaineButton.getAttribute("aria-expanded") === "true";
-    elaineHintCount.hidden = !isQuiz;
-    elaineButton.disabled = isQuiz && (quizComplete || questionAnswered);
-    if (isQuiz) {
-      elaineHintCount.textContent = String(quizState.hintsRemaining);
-      elaineButton.setAttribute("aria-label", quizComplete
-        ? "Quiz concluído. Elaine não tem mais dicas para esta rodada."
-        : questionAnswered
-          ? "Responda à pergunta atual antes de pedir outra dica."
-          : hintOpen
-            ? quizElaineShowingInvite
-              ? `Pedir uma dica à Elaine. Restam ${quizState.hintsRemaining} de ${quizHintsPerRound} dicas.`
-              : `Pedir outra dica à Elaine. Restam ${quizState.hintsRemaining} de ${quizHintsPerRound} dicas.`
-            : `Pedir dica à Elaine. Restam ${quizState.hintsRemaining} de ${quizHintsPerRound} dicas.`);
-    } else {
-      elaineButton.setAttribute("aria-label", "Alternar falas da Elaine");
-    }
-  }
-
   function closeElaineMessage() {
-    quizElaineShowingInvite = false;
     elaineButton.setAttribute("aria-expanded", "false");
     elaineMessage.hidden = true;
-    if (currentTab === "quiz") updateElaineHintControl();
-  }
-
-  function useQuizHint() {
-    const questionId = quizState.questionIds[quizState.questionIndex];
-    const question = quizById.get(questionId);
-    if (!question || quizState.answers[quizState.questionIndex] !== undefined) return;
-    quizElaineShowingInvite = false;
-    if (quizState.hintsRemaining <= 0) {
-      setElaine("Você já usou as três dicas desta rodada. Continue comparando as opções com as pistas da pergunta!");
-    } else {
-      quizState.hintsRemaining -= 1;
-      storage.write("diario-quiz-progresso", quizState);
-      setElaine(`Dica: ${question.hint} Restam ${quizState.hintsRemaining} ${quizState.hintsRemaining === 1 ? "dica" : "dicas"} nesta rodada.`);
-    }
-    updateElaineHintControl();
-    elaineMessage.hidden = false;
-    elaineButton.setAttribute("aria-expanded", "true");
-    updateElaineHintControl();
   }
 
   // Build the tab strip and every hidden/visible tab panel from the data model.
@@ -323,7 +350,7 @@
       title.append(part.highlight ? el("span", "home-hero__title-blue", part.text) : document.createTextNode(part.text));
     });
     copy.append(title, el("p", "home-hero__lede", DATA.tabs[0].intro));
-    const cta = button(DATA.home.equipmentCta, "button button--primary", () => navigate("equipamentos"));
+    const cta = button(DATA.home.equipmentCta, "button button--primary", () => navigate("linha-do-tempo"));
     cta.append(makeIcon("rover"));
     copy.append(cta, el("p", "home-hero__note", DATA.home.note));
     hero.append(copy);
@@ -405,6 +432,8 @@
   function renderTimeline(target) {
     const wrap = el("div", "timeline-experience");
     const orderedMissions = [...DATA.timeline.missions].sort((left, right) => Date.parse(left.date) - Date.parse(right.date));
+    const visitedPhasesByMission = new Map();
+    const legacyPhaseIndex = DATA.timeline.phases.findIndex((phase) => phase.id === "legado");
     const missionNav = el("div", "timeline-missions");
     missionNav.setAttribute("aria-label", "Missões em ordem cronológica");
     const steps = el("div", "timeline-steps");
@@ -453,6 +482,10 @@
       const missionTimeline = orderedMissions[timelineMissionIndex];
       const mission = missionsById.get(missionTimeline.missionId);
       const phase = missionTimeline.phases[timelinePhaseIndex];
+      const phaseNavigation = DATA.timeline.phases[timelinePhaseIndex];
+      const visitedPhases = visitedPhasesByMission.get(missionTimeline.missionId) || new Set();
+      visitedPhases.add(timelinePhaseIndex);
+      visitedPhasesByMission.set(missionTimeline.missionId, visitedPhases);
       [...missionNav.children].forEach((tab, index) => tab.setAttribute("aria-pressed", String(index === timelineMissionIndex)));
       [...steps.children].forEach((step, index) => step.setAttribute("aria-pressed", String(index === timelinePhaseIndex)));
       progressText.textContent = `Missão ${timelineMissionIndex + 1} de ${orderedMissions.length} · etapa ${timelinePhaseIndex + 1} de ${DATA.timeline.phases.length} · ${missionTimeline.dateLabel}`;
@@ -460,7 +493,16 @@
       storyText.textContent = phase.text;
       guideFact.textContent = phase.curiosity || "Vamos descobrir um detalhe curioso desta etapa!";
       linkedMissions.replaceChildren();
-      if (mission) linkedMissions.append(button(`Conhecer ${mission.name}`, "button button--outline", () => openMission(mission.id)));
+      if (mission && phaseNavigation?.id === "legado") {
+        const visitedAllEarlierPhases = DATA.timeline.phases
+          .slice(0, legacyPhaseIndex)
+          .every((_, index) => visitedPhases.has(index));
+        if (visitedAllEarlierPhases) {
+          linkedMissions.append(button(`Conhecer equipamento: ${mission.name}`, "button button--outline", () => openMission(mission.id)));
+        } else {
+          linkedMissions.append(el("p", "timeline-unlock-note", "Passe por Lançamento, Viagem, Chegada, Operação e Descobertas para conhecer este equipamento."));
+        }
+      }
       sourceArea.replaceChildren();
       addSource(sourceArea, phase.sourceId, "Saiba mais");
       previous.disabled = timelineMissionIndex === 0 && timelinePhaseIndex === 0;
@@ -576,77 +618,344 @@
     target.append(list);
   }
 
-  function renderQuiz(target) {
-    const quizRoot = el("div", "quiz-root");
-    target.append(quizRoot);
-    if (quizState.questionIds.length !== quizRoundLength) {
-      quizState = createQuizRound();
-      storage.write("diario-quiz-progresso", quizState);
-    }
-    const renderQuestion = () => {
-      quizRoot.replaceChildren();
-      updateElaineHintControl();
-      const index = quizState.questionIndex;
-      if (index >= quizState.questionIds.length) {
-        const correct = quizState.answers.reduce((sum, answer, i) => {
-          const question = quizById.get(quizState.questionIds[i]);
-          return sum + (question && answer === question.answerIndex ? 1 : 0);
-        }, 0);
-        const result = el("article", "quiz-result");
-        result.append(el("p", "eyebrow", DATA.quizResult.eyebrow), el("h2", "quiz-result__score", `${correct} de ${quizState.questionIds.length} respostas certas`));
-        result.append(el("p", "panel-intro", DATA.quizResult.message));
-        const again = button("Jogar de novo", "button button--primary", () => {
-          closeElaineMessage();
-          quizState = createQuizRound();
-          storage.write("diario-quiz-progresso", quizState);
-          renderQuestion();
-        });
-        result.append(again, button("Voltar ao início", "button button--quiet", () => navigate("inicio")));
-        quizRoot.append(result);
-        updateElaineHintControl();
-        return;
-      }
-      const question = quizById.get(quizState.questionIds[index]);
-      if (!question) {
-        quizState = createQuizRound();
-        storage.write("diario-quiz-progresso", quizState);
-        renderQuestion();
-        return;
-      }
-      quizRoot.append(el("p", "quiz-progress", `Pergunta ${index + 1} de ${quizState.questionIds.length}`), el("h2", "quiz-question", question.question));
-      const answers = el("div", "quiz-answers");
-      const selected = quizState.answers[index];
-      question.options.forEach((option, optionIndex) => {
-        const answer = button(option, "quiz-answer", () => {
-          if (selected !== undefined) return;
-          quizState.answers[index] = optionIndex;
-          storage.write("diario-quiz-progresso", quizState);
-          closeElaineMessage();
-          renderQuestion();
-        });
-        answer.disabled = selected !== undefined;
-        if (selected !== undefined && optionIndex === question.answerIndex) answer.classList.add("is-correct");
-        if (selected === optionIndex && selected !== question.answerIndex) answer.classList.add("is-wrong");
+  function renderMiniGame(target) {
+    const gameRoot = el("div", "mini-game-root");
+    const layout = el("div", "mini-game-layout");
+    const liveStatus = el("p", "visually-hidden");
+    liveStatus.setAttribute("role", "status");
+    liveStatus.setAttribute("aria-live", "polite");
+    liveStatus.setAttribute("aria-atomic", "true");
+    gameRoot.append(layout, liveStatus);
+    target.append(gameRoot);
+
+    const buildRobot = () => {
+      const figure = el("figure", `mini-game-robot${gameState.piecesUnlocked === 5 ? " is-complete" : ""}`);
+      const unlocked = gameState.piecesUnlocked;
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 400 300");
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-labelledby", "mini-robot-title mini-robot-description");
+      svg.classList.add("mini-robot-svg");
+      svg.innerHTML = `
+        <title id="mini-robot-title">Robô explorador original</title>
+        <desc id="mini-robot-description">Robô de seis rodas com corpo, painéis solares, antena e braço científico. ${unlocked} de cinco conjuntos de peças estão desbloqueados. É um personagem educativo, não a representação de um veículo real.</desc>
+        <defs>
+          <linearGradient id="mini-robot-shell" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#49656a"/><stop offset="1" stop-color="#1a3038"/>
+          </linearGradient>
+          <linearGradient id="mini-robot-panel" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#20546a"/><stop offset="1" stop-color="#102a38"/>
+          </linearGradient>
+        </defs>
+        <ellipse class="robot-ground-shadow" cx="200" cy="258" rx="139" ry="16"/>
+        <ellipse class="robot-orbit-ring" cx="200" cy="156" rx="168" ry="91" transform="rotate(-8 200 156)"/>
+        <g class="robot-piece ${unlocked > 2 ? "is-unlocked" : "is-locked"}" data-piece-id="wheels" aria-hidden="true">
+          <path d="M133 191h-18m152 0h-18M133 218h-18m152 0h-18"/>
+          <circle class="robot-tire" cx="103" cy="177" r="28"/><circle class="robot-tire" cx="297" cy="177" r="28"/>
+          <circle class="robot-tire" cx="103" cy="222" r="25"/><circle class="robot-tire" cx="297" cy="222" r="25"/>
+          <circle class="robot-wheel-rim" cx="103" cy="177" r="13"/><circle class="robot-wheel-rim" cx="297" cy="177" r="13"/>
+          <circle class="robot-wheel-rim" cx="103" cy="222" r="11"/><circle class="robot-wheel-rim" cx="297" cy="222" r="11"/>
+          <circle class="robot-wheel-core" cx="103" cy="177" r="4"/><circle class="robot-wheel-core" cx="297" cy="177" r="4"/>
+          <circle class="robot-wheel-core" cx="103" cy="222" r="4"/><circle class="robot-wheel-core" cx="297" cy="222" r="4"/>
+          <path d="M103 156v9m0 24v9m-21-21h9m24 0h9m173-21v9m0 24v9m-21-21h9m24 0h9M103 203v8m0 22v8m-19-19h8m22 0h8m175-19v8m0 22v8m-19-19h8m22 0h8"/>
+        </g>
+        <g class="robot-piece ${unlocked > 1 ? "is-unlocked" : "is-locked"}" data-piece-id="power" aria-hidden="true">
+          <path class="robot-solar-panel" d="M22 97h92v70H22zM286 97h92v70h-92z"/>
+          <path class="robot-solar-grid" d="M45 97v70m23-70v70m23-70v70M22 120h92m-92 23h92m195-46v70m23-70v70m23-70v70m-92-47h92m-92 23h92"/>
+          <path d="m114 128 25 15m172-15-25 15"/>
+        </g>
+        <g class="robot-piece ${unlocked > 0 ? "is-unlocked" : "is-locked"}" data-piece-id="chassis" aria-hidden="true">
+          <path d="M126 177h-12m160 0h12M126 209h-12m160 0h12"/>
+          <path class="robot-body" d="M136 112q0-17 17-17h94q17 0 17 17v99q0 15-16 15h-96q-16 0-16-15z"/>
+          <path class="robot-face-frame" d="M149 119q0-7 7-7h88q7 0 7 7v55q0 7-7 7h-88q-7 0-7-7z"/>
+          <circle class="robot-eye" cx="174" cy="143" r="6"/><circle class="robot-eye" cx="226" cy="143" r="6"/>
+          <path class="robot-smile" d="M181 159q19 17 38 0"/>
+          <path d="M154 198h92m-64 13v14m36-14v14"/>
+          <circle class="robot-bolt" cx="146" cy="103" r="3"/><circle class="robot-bolt" cx="254" cy="103" r="3"/>
+        </g>
+        <g class="robot-piece ${unlocked > 3 ? "is-unlocked" : "is-locked"}" data-piece-id="antenna" aria-hidden="true">
+          <path d="M200 94V51m-18 0q18-23 36 0m-29-7q11-14 22 0"/><circle class="robot-beacon" cx="200" cy="44" r="7"/>
+        </g>
+        <g class="robot-piece ${unlocked > 4 ? "is-unlocked" : "is-locked"}" data-piece-id="instrument" aria-hidden="true">
+          <path d="M260 139h19l20-19 22 3m-61 16 15 29 24-4"/><circle class="robot-joint" cx="279" cy="139" r="8"/>
+          <circle class="robot-joint" cx="299" cy="120" r="6"/><path class="robot-sensor" d="m319 112 22 4v17l-22 4z"/>
+          <path d="M331 113v24m8-20v16"/>
+        </g>`;
+
+      const stage = el("div", "mini-robot-stage");
+      stage.append(svg);
+      const caption = el("figcaption", "mini-game-robot__caption");
+      const name = el("strong", "mini-game-robot__name", gameState.robotName || "Seu explorador");
+      const counter = el("span", "mini-game-robot__counter", `Peças: ${unlocked}/5`);
+      caption.append(name, counter);
+      const parts = el("ul", "mini-game-parts");
+      gamePieces.forEach((piece, index) => {
+        const item = el("li", unlocked > index ? "is-unlocked" : "is-locked");
+        item.dataset.pieceStatus = piece.id;
+        item.append(el("span", "mini-game-parts__name", piece.label), el("span", "mini-game-parts__state", unlocked > index ? "Desbloqueada" : "Bloqueada"));
+        parts.append(item);
+      });
+      figure.append(stage, caption, parts);
+      return figure;
+    };
+
+    const showIntro = () => {
+      const panel = el("section", "mini-game-play mini-game-intro");
+      panel.append(el("p", "eyebrow", "OFICINA DE EXPLORAÇÃO"), el("h2", "mini-game-title", "Monte seu robô explorador"));
+      panel.append(el("p", "mini-game-copy", "Você tem até oito perguntas para encaixar as cinco peças do robô. Se errar duas vezes, a pergunta volta no fim da rodada. Cada resposta revela uma pista sobre como os equipamentos espaciais trabalhavam."));
+      panel.append(el("p", "mini-game-record", `Seu recorde: ${bestScore} de 5 peças`));
+      panel.append(button("Começar", "button button--primary", () => {
+        gameState = createGameRound();
+        updateElaineHintCounter();
+        liveStatus.textContent = "Partida iniciada. Você tem até oito perguntas para montar as cinco peças do robô.";
+        paint(true);
+      }));
+      return panel;
+    };
+
+    const showQuestion = () => {
+      const index = gameState.questionIndex;
+      const question = gameState.questions[index];
+      const questionCount = gameState.questions.length;
+      const attemptLimit = question.retryCount ? gameAttemptLimit : 2;
+      const mission = missionsById.get(question.equipmentId);
+      const panel = el("section", "mini-game-play mini-game-question-panel");
+      const progress = el("div", "mini-game-progress");
+      progress.append(el("span", "mini-game-progress__label", `Pergunta ${index + 1} de ${questionCount}`), el("span", "mini-game-progress__count", `Peças: ${gameState.piecesUnlocked}/5`));
+      const progressBar = el("div", "mini-game-progress__track");
+      progressBar.setAttribute("role", "progressbar");
+      progressBar.setAttribute("aria-label", "Progresso da partida");
+      progressBar.setAttribute("aria-valuemin", "0");
+      progressBar.setAttribute("aria-valuemax", String(questionCount));
+      progressBar.setAttribute("aria-valuenow", String(index + 1));
+      const progressFill = el("span", "mini-game-progress__fill");
+      progressFill.style.width = `${((index + 1) / questionCount) * 100}%`;
+      progressBar.append(progressFill);
+      panel.append(progress, progressBar);
+      if (mission) panel.append(el("p", "mini-game-equipment", mission.name));
+      const heading = el("h2", "mini-game-title mini-game-question");
+      heading.tabIndex = -1;
+      heading.textContent = question.prompt;
+      panel.append(heading);
+
+      const answers = el("div", "mini-game-answers");
+      const selected = gameState.answers[index];
+      const missedChoices = gameState.wrongChoices[index] || [];
+      const correctChoice = question.shuffledOptions.findIndex((option) => option.originalIndex === question.correctIndex);
+      question.shuffledOptions.forEach((option, optionIndex) => {
+        const answer = button("", "mini-game-answer", () => chooseAnswer(optionIndex));
+        answer.setAttribute("aria-label", `Alternativa ${optionIndex + 1}: ${option.label}`);
+        answer.append(el("span", "mini-game-answer__key", String(optionIndex + 1)), el("span", "mini-game-answer__text", option.label));
+        answer.disabled = Boolean(selected) || missedChoices.includes(optionIndex);
+        if (selected && optionIndex === correctChoice) answer.classList.add("is-correct");
+        if (missedChoices.includes(optionIndex)) answer.classList.add("is-wrong");
         answers.append(answer);
       });
-      quizRoot.append(answers);
-      if (selected !== undefined) {
-        const feedback = el("div", `quiz-feedback ${selected === question.answerIndex ? "quiz-feedback--correct" : "quiz-feedback--wrong"}`);
-        feedback.textContent = question.explanations[selected];
-        feedback.setAttribute("role", "status");
-        quizRoot.append(feedback);
-        const next = button(index === quizState.questionIds.length - 1 ? "Ver resultado" : "Próxima pergunta", "button button--primary", () => {
-          quizState.questionIndex = index + 1;
-          storage.write("diario-quiz-progresso", quizState);
-          closeElaineMessage();
-          renderQuestion();
-        });
-        quizRoot.append(next);
-        const attribution = quizAttribution(question.sourceIds);
-        if (attribution) quizRoot.append(attribution);
+      panel.append(answers);
+
+      if (selected || missedChoices.length) {
+        const feedback = el("article", `mini-game-feedback ${selected?.correct ? "is-correct" : "is-encouraging"}`);
+        feedback.setAttribute("aria-live", "off");
+        const feedbackTitle = selected?.correct
+          ? "Muito bem! Uma peça encontrou seu lugar."
+          : selected?.deferred
+            ? "Quase! Esta pergunta volta no fim da rodada."
+          : selected
+            ? `Quase! A resposta era “${question.shuffledOptions[correctChoice].label}”.`
+            : "Quase! Tente mais uma vez!";
+        feedback.append(el("p", "mini-game-feedback__title", feedbackTitle));
+        const feedbackText = selected?.correct
+          ? question.explanation
+          : selected?.deferred
+            ? "Vamos seguir para outra missão. Você terá outra oportunidade de responder esta pergunta antes de terminar."
+          : selected
+            ? question.explanation
+            : `Essa alternativa já foi eliminada. Você ainda tem ${attemptLimit - missedChoices.length} ${attemptLimit - missedChoices.length === 1 ? "tentativa" : "tentativas"} nesta pergunta.`;
+        feedback.append(el("p", "mini-game-feedback__fact", feedbackText));
+        if (selected?.correct) {
+          const reward = el("span", "mini-game-reward", `✦ ${gamePieces[selected.pieceIndex].label}`);
+          reward.dataset.rewardPiece = gamePieces[selected.pieceIndex].id;
+          feedback.append(reward);
+        }
+        panel.append(feedback);
+        if (selected) {
+          const robotComplete = gameState.piecesUnlocked === gamePieces.length;
+          const roundComplete = index === gameRoundLength - 1 || robotComplete;
+          panel.append(button(robotComplete ? "Ver robô completo" : roundComplete ? "Ver resultado" : "Próxima pergunta", "button button--primary mini-game-next", () => {
+            if (roundComplete) {
+              gameState.screen = "result";
+              saveBestScore(gameState.piecesUnlocked);
+              liveStatus.textContent = `Partida concluída. Você desbloqueou ${gameState.piecesUnlocked} de 5 peças.`;
+              updateElaineHintCounter();
+              paint(false);
+              window.requestAnimationFrame(() => gameRoot.querySelector(".mini-game-result .mini-game-title")?.focus({ preventScroll: true }));
+              return;
+            }
+            gameState.questionIndex += 1;
+            liveStatus.textContent = `Pergunta ${gameState.questionIndex + 1} de ${gameRoundLength}.`;
+            paint(true);
+          }));
+        }
       }
+      return panel;
     };
-    renderQuestion();
+
+    const showResult = () => {
+      const complete = gameState.piecesUnlocked === 5;
+      const missing = 5 - gameState.piecesUnlocked;
+      const panel = el("section", `mini-game-play mini-game-result ${complete ? "is-complete" : "is-partial"}`);
+      if (complete) {
+        const celebration = el("div", "mini-game-stars");
+        celebration.setAttribute("aria-hidden", "true");
+        [8, 17, 26, 34, 43, 55, 64, 73, 82, 91, 21, 76].forEach((position, index) => {
+          const star = el("span", "mini-game-star", "✦");
+          star.style.setProperty("--star-x", `${position}%`);
+          star.style.setProperty("--star-delay", `${index * 45}ms`);
+          celebration.append(star);
+        });
+        panel.append(celebration);
+      }
+      panel.append(el("p", "eyebrow", complete ? "MISSÃO CUMPRIDA" : "RODADA ENCERRADA"));
+      const resultTitle = el("h2", "mini-game-title", complete ? "Seu robô está pronto!" : "Não foi dessa vez!");
+      resultTitle.tabIndex = -1;
+      panel.append(resultTitle);
+      panel.append(el("p", "mini-game-copy", complete
+        ? "Seu robô está completo! Os exploradores reais também combinaram energia, movimento, comunicação e instrumentos para transformar lugares distantes em novos conhecimentos."
+        : `Você montou ${gameState.piecesUnlocked} de 5 peças em até oito perguntas. Tente novamente: uma nova rodada traz outras perguntas e uma nova chance de completar o explorador.`));
+      panel.append(el("p", "mini-game-record", `Recorde: ${bestScore} de 5 peças · ${missing} ${missing === 1 ? "peça" : "peças"} faltando`));
+      if (complete) {
+        const naming = el("label", "mini-game-naming", "Seu robô está completo! Que nome ele vai levar para a próxima missão?");
+        const nameInput = el("input", "mini-game-name-input");
+        nameInput.type = "text";
+        nameInput.maxLength = 20;
+        nameInput.autocomplete = "off";
+        nameInput.placeholder = "Ex.: Faísca";
+        nameInput.value = gameState.robotName || "";
+        nameInput.setAttribute("aria-label", "Nome do robô completo, guardado apenas nesta tela");
+        nameInput.addEventListener("input", () => {
+          gameState.robotName = nameInput.value.slice(0, 20);
+          const robotName = gameRoot.querySelector(".mini-game-robot__name");
+          if (robotName) robotName.textContent = gameState.robotName || "Seu explorador";
+        });
+        naming.append(nameInput);
+        panel.append(naming);
+      }
+      const actions = el("div", "mini-game-result__actions");
+      actions.append(button(complete ? "Jogar de novo" : "Tentar novamente", "button button--primary", () => {
+        gameState = createGameRound();
+        gameState.robotName = "";
+        liveStatus.textContent = `Nova partida iniciada. Você tem até ${gameRoundLength} perguntas para montar o robô.`;
+        paint(true);
+      }));
+      actions.append(button("Voltar ao início", "button button--quiet", () => navigate("inicio")));
+      panel.append(actions);
+      return panel;
+    };
+
+    const paint = (focusQuestion = false) => {
+      const robot = buildRobot();
+      const play = gameState.screen === "intro" ? showIntro() : gameState.screen === "result" ? showResult() : showQuestion();
+      layout.replaceChildren(robot, play);
+      updateElaineHintCounter();
+      gameRoot.classList.remove("is-question-entering");
+      if (gameState.screen === "question") {
+        void gameRoot.offsetWidth;
+        gameRoot.classList.add("is-question-entering");
+      }
+      if (focusQuestion) window.requestAnimationFrame(() => gameRoot.querySelector(".mini-game-question")?.focus({ preventScroll: true }));
+    };
+
+    const animatePieceArrival = (pieceId) => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const reward = gameRoot.querySelector(`[data-reward-piece="${pieceId}"]`);
+      const piece = gameRoot.querySelector(`[data-piece-id="${pieceId}"]`);
+      if (!reward || !piece || typeof piece.animate !== "function") return;
+      const source = reward.getBoundingClientRect();
+      const destination = piece.getBoundingClientRect();
+      const dx = source.left + source.width / 2 - (destination.left + destination.width / 2);
+      const dy = source.top + source.height / 2 - (destination.top + destination.height / 2);
+      try {
+        const motion = piece.animate([
+          { transform: `translate(${dx}px, ${dy}px) scale(.2)`, opacity: .25 },
+          { transform: "translate(0, 0) scale(1)", opacity: 1 }
+        ], { duration: 460, easing: "cubic-bezier(.77, 0, .175, 1)" });
+        motion.onfinish = () => piece.classList.add("has-arrived");
+      } catch (_) { piece.classList.add("has-arrived"); }
+    };
+
+    const chooseAnswer = (choiceIndex) => {
+      const index = gameState.questionIndex;
+      const question = gameState.questions[index];
+      if (!question || gameState.answers[index]) return;
+      const correctIndex = question.shuffledOptions.findIndex((option) => option.originalIndex === question.correctIndex);
+      const correct = choiceIndex === correctIndex;
+      const pieceIndex = gameState.piecesUnlocked;
+      const pieceId = correct ? gamePieces[pieceIndex].id : "";
+      let deferred = false;
+      if (correct) {
+        gameState.answers[index] = { choiceIndex, correct, pieceIndex };
+        gameState.piecesUnlocked += 1;
+        saveBestScore(gameState.piecesUnlocked);
+        if (gameState.pendingElaineHint?.id === question.id) gameState.pendingElaineHint = null;
+        liveStatus.textContent = `Resposta certa. ${gamePieces[pieceIndex].label} desbloqueada. Peças: ${gameState.piecesUnlocked} de 5. ${question.explanation}`;
+      } else {
+        if (!gameState.wrongChoices[index]) gameState.wrongChoices[index] = [];
+        if (gameState.wrongChoices[index].includes(choiceIndex)) return;
+        gameState.wrongChoices[index].push(choiceIndex);
+        const attemptLimit = question.retryCount ? gameAttemptLimit : 2;
+        const attemptsLeft = attemptLimit - gameState.wrongChoices[index].length;
+        if (attemptsLeft <= 0) {
+          let retrySlot = -1;
+          if (!question.retryCount) {
+            for (let queuedIndex = gameState.questions.length - 1; queuedIndex > index; queuedIndex -= 1) {
+              if (!gameState.questions[queuedIndex].retryCount && !gameState.answers[queuedIndex]) {
+                retrySlot = queuedIndex;
+                break;
+              }
+            }
+          }
+          if (retrySlot > index) {
+            gameState.questions[retrySlot] = {
+              ...question,
+              retryCount: 1,
+              shuffledOptions: shuffle(question.options.map((label, originalIndex) => ({ label, originalIndex })))
+            };
+            gameState.answers[index] = { choiceIndex, correct: false, pieceIndex: null, deferred: true };
+            gameState.pendingElaineHint = question;
+            gameState.questionIndex += 1;
+            deferred = true;
+            liveStatus.textContent = `Quase! Esta pergunta volta no fim da rodada. Pergunta ${gameState.questionIndex + 1} de ${gameRoundLength}.`;
+          } else {
+            gameState.answers[index] = { choiceIndex, correct: false, pieceIndex: null, revealed: true };
+            if (gameState.pendingElaineHint?.id === question.id) gameState.pendingElaineHint = null;
+            liveStatus.textContent = `Fim das tentativas para esta pergunta. A resposta era ${question.shuffledOptions[correctIndex].label}.`;
+          }
+        } else {
+          gameState.pendingElaineHint = question;
+          liveStatus.textContent = `Quase! Tente mais uma vez. Você ainda tem ${attemptsLeft} ${attemptsLeft === 1 ? "tentativa" : "tentativas"} nesta pergunta.`;
+        }
+      }
+      paint(deferred);
+      if (correct) window.requestAnimationFrame(() => animatePieceArrival(pieceId));
+      if (!correct) remindElaineCanHelp({ deferred, resolved: Boolean(gameState.answers[index]) });
+      if (deferred) return;
+      window.requestAnimationFrame(() => {
+        const target = gameState.answers[index]
+          ? gameRoot.querySelector(".mini-game-next")
+          : gameRoot.querySelector(".mini-game-answer:not(:disabled)");
+        target?.focus({ preventScroll: true });
+      });
+    };
+
+    gameRoot.addEventListener("keydown", (event) => {
+      if (gameState.screen !== "question" || gameState.answers[gameState.questionIndex]) return;
+      if (!/^[1-4]$/.test(event.key) || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target?.isContentEditable) return;
+      event.preventDefault();
+      chooseAnswer(Number(event.key) - 1);
+    });
+
+    paint(false);
   }
 
   const renderers = {
@@ -655,7 +964,7 @@
     equipamentos: renderEquipment,
     mapa: renderMap,
     escala: renderScale,
-    quiz: renderQuiz,
+    "mini-game": renderMiniGame,
     glossario: renderGlossary,
     fontes: renderSources
   };
@@ -664,8 +973,8 @@
   // Tab navigation, URL routing, and focus management.
   function activateTab(id, options = {}) {
     let tab = tabsById.has(id) ? id : "inicio";
-    if (tab === "quiz" && !quizUnlocked()) {
-      announceQuizLock();
+    if (tab === "mini-game" && !miniGameUnlocked()) {
+      announceMiniGameLock();
       tab = "inicio";
       replaceHash("inicio");
     }
@@ -674,9 +983,9 @@
       renderedTabs.add(tab);
     }
     currentTab = tab;
-    if (tab === "quiz" && !quizAccessed) {
-      quizAccessed = true;
-      storage.write("diario-quiz-acessado", true);
+    if (tab === "mini-game" && !miniGameAccessed) {
+      miniGameAccessed = true;
+      storage.write("diario-mini-game-acessado", true);
     }
     closeMobileMenu();
     DATA.tabs.forEach((item) => {
@@ -692,23 +1001,12 @@
     const tabData = tabsById.get(tab);
     setElaine(tab === "inicio" ? DATA.home.elaineLines : (tabData.elaineLines || tabData.intro));
     elaineDock.hidden = tab === "inicio" || tab === "linha-do-tempo";
+    updateElaineHintCounter();
     if (tab === "inicio") {
       const caption = panels.get("inicio").body.querySelector(".hero-art-caption");
       if (caption) caption.textContent = DATA.home.elainePhoto.caption;
     }
     closeElaineMessage();
-    if (tab === "quiz" && !quizInviteShown) {
-      quizInviteShown = true;
-      const canOfferHint = quizState.questionIndex < quizState.questionIds.length
-        && quizState.answers[quizState.questionIndex] === undefined;
-      if (canOfferHint) {
-        quizElaineShowingInvite = true;
-        elaineMessage.textContent = "Dúvida, tripulante? Posso te ajudar!";
-        elaineMessage.hidden = false;
-        elaineButton.setAttribute("aria-expanded", "true");
-      }
-    }
-    updateElaineHintControl();
     const activePanel = panels.get(tab).panel;
     if (!activePanel.hidden) {
       window.requestAnimationFrame(() => activePanel.classList.add("is-entering"));
@@ -719,9 +1017,9 @@
 
   function navigate(id) {
     if (!tabsById.has(id)) id = "inicio";
-    if (id === "quiz" && !quizUnlocked()) {
-      announceQuizLock();
-      tabButtons.get("quiz").focus();
+    if (id === "mini-game" && !miniGameUnlocked()) {
+      announceMiniGameLock();
+      tabButtons.get("mini-game").focus();
       return;
     }
     if (location.hash !== `#${id}`) {
@@ -793,17 +1091,13 @@
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && currentTab === "quiz" && elaineButton.getAttribute("aria-expanded") === "true") {
-      closeElaineMessage();
-      return;
-    }
     if (event.key === "Escape" && mobileMenuToggle?.getAttribute("aria-expanded") === "true") {
       closeMobileMenu({ restoreFocus: true });
     }
   });
 
   document.addEventListener("pointerdown", (event) => {
-    if (currentTab === "quiz" && !elaineMessage.hidden && !elaineDock.contains(event.target)) closeElaineMessage();
+    if (currentTab !== "mini-game" && !elaineMessage.hidden && !elaineDock.contains(event.target)) closeElaineMessage();
     if (mobileMenuToggle?.getAttribute("aria-expanded") !== "true") return;
     if (!tabList.contains(event.target) && !mobileMenuToggle.contains(event.target)) closeMobileMenu();
   });
@@ -822,14 +1116,14 @@
     routeBar.setAttribute("aria-valuemax", String(total));
     routeBar.setAttribute("aria-valuetext", `${percent} por cento, ${count} de ${total} missões conhecidas`);
     const complete = count === total;
-    const quizTab = tabButtons.get("quiz");
-    quizTab?.setAttribute("aria-disabled", String(!complete));
-    if (quizTab) quizTab.title = complete ? "Quiz liberado" : `Conheça as ${total} missões para liberar o quiz`;
-    completionBanner.hidden = !complete || quizAccessed;
+    const miniGameTab = tabButtons.get("mini-game");
+    miniGameTab?.setAttribute("aria-disabled", String(!complete));
+    if (miniGameTab) miniGameTab.title = complete ? "Mini game liberado" : `Conheça os ${total} equipamentos para liberar o Mini game`;
+    completionBanner.hidden = !complete || miniGameAccessed;
     if (complete) {
       document.getElementById("completion-title").textContent = DATA.progress.completedTitle;
       document.getElementById("completion-copy").textContent = DATA.progress.completedCopy;
-      document.getElementById("completion-quiz").textContent = DATA.progress.quizButton;
+      document.getElementById("completion-mini-game").textContent = DATA.progress.miniGameButton;
     }
   }
 
@@ -889,13 +1183,16 @@
     const missionLede = el("p", "dialog-lede");
     missionLede.textContent = mission.summary;
     dialogContent.append(missionLede);
+    dialogContent.append(el("p", "mission-story__narrator-note", "Nilo é o guia narrador desta exposição. Sua voz é imaginada; os acontecimentos e dados vêm das fontes citadas."));
     const storyList = el("div", "mission-story");
     mission.story.forEach((chapter, index) => {
       const chapterCard = el("article", "mission-story__chapter");
-      chapterCard.append(el("p", "eyebrow", `CAPÍTULO ${index + 1}`), el("h3", "", chapter.title), el("p", "mission-story__fact", chapter.text));
-      const voice = el("div", "mission-story__voice");
-      voice.append(el("span", "content-label content-label--narrative", "Licença narrativa"), el("p", "", `“${chapter.voice}”`));
-      chapterCard.append(voice);
+      chapterCard.append(el("p", "eyebrow", `CAPÍTULO ${index + 1}`), el("h3", "", chapter.title));
+      const narration = el("div", "mission-story__voice");
+      const speaker = el("div", "mission-story__speaker");
+      speaker.append(makeNiloAvatar(), el("span", "content-label content-label--narrative", "Nilo conta"));
+      narration.append(speaker, el("p", "", chapter.text));
+      chapterCard.append(narration);
       addSource(chapterCard, chapter.sourceId, "Fonte do capítulo");
       storyList.append(chapterCard);
     });
@@ -920,11 +1217,11 @@
     });
     const footer = el("div", "dialog-actions");
     footer.append(techToggle);
-    if (quizUnlocked()) footer.append(button("Ir para o quiz", "button button--primary", () => { dialog.close(); navigate("quiz"); }));
+    if (miniGameUnlocked()) footer.append(button("Ir para o Mini game", "button button--primary", () => { dialog.close(); navigate("mini-game"); }));
     dialogContent.append(tech, footer);
     if (visitedMissions.size === DATA.missions.length) {
       const ready = el("p", "completion-inline", `${DATA.progress.completedTitle} ${DATA.progress.completedCopy}`);
-      dialogContent.append(ready, button(DATA.progress.quizButton, "button button--bright", () => { dialog.close(); navigate("quiz"); }));
+      dialogContent.append(ready, button(DATA.progress.miniGameButton, "button button--bright", () => { dialog.close(); navigate("mini-game"); }));
     }
     dialog.showModal();
   }
@@ -933,14 +1230,10 @@
     if (event.target === dialog) dialog.close();
   });
   elaineButton.addEventListener("click", () => {
-    if (currentTab !== "quiz") {
-      openElaine();
-      return;
-    }
-    quizElaineShowingInvite = false;
-    useQuizHint();
+    if (currentTab === "mini-game") giveMiniGameHint();
+    else openElaine();
   });
-  completionBanner.querySelector("button").addEventListener("click", () => navigate("quiz"));
+  completionBanner.querySelector("button").addEventListener("click", () => navigate("mini-game"));
 
   // Render a tab on first access, then reuse its DOM on later visits.
   routeFromHash();
