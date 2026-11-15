@@ -36,7 +36,7 @@ O mapa mostra Marte, Lua, órbitas e cinco pontos coloridos, com uma legenda cur
 
 ## Conteúdo, fotos e fontes
 
-As cinco histórias detalhadas, os capítulos, o quiz, a ficha técnica, o mapa, o glossário e as referências ficam em `js/data.js`. Os dados do LRV da Apollo 15 usam a ficha NSSDCA indicada no projeto e registros complementares da NASA. As fotos do arquivo estão em `assets/`; a foto do LRV é servida pela coleção oficial NASA Images e precisa de conexão à internet. A astronauta-guia Elaine está em `assets/elaine-astronaut-clean.png`; é uma ilustração gerada por IA, com fundo transparente e uma bandeira azul sem identificação. O fundo espacial da página inicial está em `assets/space-hero-cropped.png`; tanto ele quanto Elaine são declarados na aba “Sobre o site” e em `AI-DISCLOSURE.md`. As fotos de arquivo recebem crédito e link para a origem.
+As cinco histórias detalhadas, os capítulos, o quiz, a ficha técnica, o mapa, o glossário e as referências ficam em `js/data.js`. Os dados do LRV da Apollo 15 usam a ficha NSSDCA indicada no projeto e registros complementares da NASA. As fotos do arquivo estão em `assets/`; a foto do LRV é servida pela coleção oficial NASA Images e precisa de conexão à internet. A astronauta-guia Elaine está em `assets/elaine-astronaut-clean-v2.png`; o fundo cinematográfico da página inicial está em `assets/space-hero-cinematic.png`. As fotos de arquivo recebem crédito e link para a origem.
 
 Ao cadastrar uma foto, informe `imageUrl`, `imageAlt`, `caption`, `credit` e `photoSourceId`. O carregador aceita arquivos locais em `assets/` e imagens HTTPS nos domínios oficiais incluídos na lista segura de `js/script.js`. Se a imagem falhar, aparece uma indicação e o link de origem continua disponível. As fotografias de arquivo mantêm seus créditos. A ilustração de Elaine não usa logotipos; o projeto não tem afiliação com a NASA.
 
@@ -47,4 +47,3 @@ Ao cadastrar uma foto, informe `imageUrl`, `imageAlt`, `caption`, `credit` e `ph
 - `js/data.js`: texto, fatos, dados técnicos, imagens e fontes.
 - `js/script.js`: renderização dos painéis, navegação, foco, diálogo, armazenamento de sessão, progresso e quiz.
 - `assets/`: fotografias do arquivo NASA/NSSDC, a ilustração transparente de Elaine e o fundo espacial ilustrativo.
-- `AI-DISCLOSURE.md`: declaração sobre o uso de IA.

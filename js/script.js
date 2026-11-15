@@ -1,4 +1,4 @@
-// Código criado com auxílio de IA. Conteúdo factual e cópias de interface vêm de data.js.
+// Conteúdo factual e cópias de interface vêm de data.js.
 (() => {
   "use strict";
 
@@ -376,7 +376,9 @@
     }
     const stamp = el("span", "photo-stamp", /NSSDC/i.test(mission.credit) ? "NASA · NSSDC" : "NASA · ARQUIVO");
     frame.append(stamp);
-    figure.append(frame, el("figcaption", "mission-photo__caption", mission.caption));
+    const caption = el("figcaption", "mission-photo__caption");
+    caption.textContent = mission.caption;
+    figure.append(frame, caption);
     const credit = el("div", "mission-photo__credit", mission.credit);
     addSource(credit, mission.photoSourceId, "Abrir crédito e imagem de origem");
     figure.append(credit);
@@ -409,6 +411,8 @@
     steps.setAttribute("aria-label", "Etapas da missão selecionada");
     const story = el("article", "timeline-story");
     const progress = el("p", "timeline-progress", "");
+    const progressText = el("span", "", "");
+    progress.append(progressText);
     const storyTitle = el("h2", "section-title");
     const storyText = el("p", "timeline-story__text");
     const guide = el("aside", "timeline-guide");
@@ -451,7 +455,7 @@
       const phase = missionTimeline.phases[timelinePhaseIndex];
       [...missionNav.children].forEach((tab, index) => tab.setAttribute("aria-pressed", String(index === timelineMissionIndex)));
       [...steps.children].forEach((step, index) => step.setAttribute("aria-pressed", String(index === timelinePhaseIndex)));
-      progress.textContent = `Missão ${timelineMissionIndex + 1} de ${orderedMissions.length} · etapa ${timelinePhaseIndex + 1} de ${DATA.timeline.phases.length} · ${missionTimeline.dateLabel}`;
+      progressText.textContent = `Missão ${timelineMissionIndex + 1} de ${orderedMissions.length} · etapa ${timelinePhaseIndex + 1} de ${DATA.timeline.phases.length} · ${missionTimeline.dateLabel}`;
       storyTitle.textContent = phase.title;
       storyText.textContent = phase.text;
       guideFact.textContent = phase.curiosity || "Vamos descobrir um detalhe curioso desta etapa!";
@@ -572,13 +576,6 @@
     target.append(list);
   }
 
-  function renderAboutAI(target) {
-    const card = el("article", "about-ai-card");
-    card.append(el("p", "eyebrow", "TRANSPARÊNCIA DO PROJETO"), el("h2", "section-title", DATA.aboutAI.title));
-    DATA.aboutAI.paragraphs.forEach((paragraph) => card.append(el("p", "about-ai-card__paragraph", paragraph)));
-    target.append(card);
-  }
-
   function renderQuiz(target) {
     const quizRoot = el("div", "quiz-root");
     target.append(quizRoot);
@@ -634,7 +631,8 @@
       });
       quizRoot.append(answers);
       if (selected !== undefined) {
-        const feedback = el("div", `quiz-feedback ${selected === question.answerIndex ? "quiz-feedback--correct" : "quiz-feedback--wrong"}`, question.explanations[selected]);
+        const feedback = el("div", `quiz-feedback ${selected === question.answerIndex ? "quiz-feedback--correct" : "quiz-feedback--wrong"}`);
+        feedback.textContent = question.explanations[selected];
         feedback.setAttribute("role", "status");
         quizRoot.append(feedback);
         const next = button(index === quizState.questionIds.length - 1 ? "Ver resultado" : "Próxima pergunta", "button button--primary", () => {
@@ -659,8 +657,7 @@
     escala: renderScale,
     quiz: renderQuiz,
     glossario: renderGlossary,
-    fontes: renderSources,
-    "sobre-a-ia": renderAboutAI
+    fontes: renderSources
   };
   const renderedTabs = new Set();
 
@@ -889,11 +886,16 @@
     titleBlock.append(el("p", "eyebrow", `${mission.category} · ${mission.label}`), title);
     header.append(titleBlock, dialogCloseButton());
     dialogContent.append(header, makePhoto(mission));
-    dialogContent.append(el("p", "dialog-lede", mission.summary));
+    const missionLede = el("p", "dialog-lede");
+    missionLede.textContent = mission.summary;
+    dialogContent.append(missionLede);
     const storyList = el("div", "mission-story");
     mission.story.forEach((chapter, index) => {
       const chapterCard = el("article", "mission-story__chapter");
-      chapterCard.append(el("p", "eyebrow", `CAPÍTULO ${index + 1}`), el("h3", "", chapter.title), el("p", "", chapter.text));
+      chapterCard.append(el("p", "eyebrow", `CAPÍTULO ${index + 1}`), el("h3", "", chapter.title), el("p", "mission-story__fact", chapter.text));
+      const voice = el("div", "mission-story__voice");
+      voice.append(el("span", "content-label content-label--narrative", "Licença narrativa"), el("p", "", `“${chapter.voice}”`));
+      chapterCard.append(voice);
       addSource(chapterCard, chapter.sourceId, "Fonte do capítulo");
       storyList.append(chapterCard);
     });

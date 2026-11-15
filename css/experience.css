@@ -1,5 +1,5 @@
-/* Código criado com auxílio de IA. Componentes visuais dos painéis e experiências. */
-.home-hero { position: relative; isolation: isolate; display: grid; width: min(100%, 84rem); grid-template-columns: minmax(0, 1.12fr) minmax(300px, .88fr); align-items: center; gap: clamp(18px, 3vw, 44px); min-height: 0; margin: 0 auto; padding: 30px clamp(22px, 4vw, 56px); overflow: hidden; border: 1px solid rgba(168, 221, 242, .17); border-radius: 20px; background-color: #0b1119; background-image: linear-gradient(90deg, rgba(7, 14, 22, .94) 0%, rgba(7, 14, 22, .88) 35%, rgba(7, 14, 22, .42) 63%, rgba(7, 14, 22, .12) 100%), linear-gradient(0deg, rgba(8, 13, 18, .54), transparent 42%), url("../assets/space-hero-cropped.png"); background-position: center, center, 58% 42%; background-size: cover; }
+/* Componentes visuais dos painéis e experiências. */
+.home-hero { position: relative; isolation: isolate; display: grid; width: min(100%, 84rem); grid-template-columns: minmax(0, 1.12fr) minmax(300px, .88fr); align-items: center; gap: clamp(18px, 3vw, 44px); min-height: 0; margin: 0 auto; padding: 30px clamp(22px, 4vw, 56px); overflow: hidden; border: 1px solid rgba(168, 221, 242, .17); border-radius: 20px; background-color: #0b1119; background-image: linear-gradient(90deg, rgba(7, 14, 22, .78) 0%, rgba(7, 14, 22, .6) 35%, rgba(7, 14, 22, .24) 63%, rgba(7, 14, 22, .06) 100%), linear-gradient(0deg, rgba(8, 13, 18, .28), transparent 42%), url("../assets/space-hero-cinematic.png"); background-position: center, center, 58% 42%; background-size: 100% 100%, 100% 100%, cover; background-repeat: no-repeat; }
 .home-hero__copy, .home-hero__art { position: relative; z-index: 1; }
 .home-hero__copy { max-width: 730px; }
 .home-hero__title { max-width: 750px; margin: 0; font: 500 clamp(44px, 5.5vw, 76px)/1.01 var(--serif); letter-spacing: -.05em; }
@@ -34,8 +34,8 @@
 .mission-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: linear-gradient(160deg, #202724, #181e1c); transition: transform .2s var(--ease), border-color .2s ease, box-shadow .2s ease; }
 .mission-card:hover, .mission-card:focus-within { transform: translateY(-3px); border-color: rgba(168, 221, 242, .4); box-shadow: 0 16px 36px rgba(0, 0, 0, .18); }
 .mission-photo--compact { margin: 0; }
-.mission-photo--compact .mission-photo__frame { min-height: 155px; border: 0; border-radius: 0; }
-.mission-photo--compact .mission-photo__image { height: 185px; max-height: none; object-fit: cover; }
+.mission-photo--compact .mission-photo__frame { min-height: 0; aspect-ratio: 16 / 9; border: 0; border-radius: 0; }
+.mission-photo--compact .mission-photo__image { position: absolute; inset: 0; width: 100%; height: 100%; max-width: 100%; max-height: none; object-fit: cover; object-position: center; }
 .mission-photo--compact .photo-stamp { right: 10px; bottom: 10px; }
 .mission-photo--compact .mission-photo__caption, .mission-photo--compact .mission-photo__credit { display: none; }
 .mission-card__content { padding: 15px 16px 17px; }
@@ -66,6 +66,9 @@
 .timeline-guide__label::before { color: var(--blue); content: "✦"; font-size: 1rem; }
 .timeline-guide__fact { grid-area: fact; margin: 0; color: var(--ink); font: 500 clamp(1.45rem, 1.9vw, 1.75rem)/1.4 var(--serif); }
 .timeline-guide__portrait { grid-area: portrait; width: 4rem; height: 4rem; border: 2px solid rgba(168,221,242,.5); box-shadow: 0 0 1rem rgba(168,221,242,.16); }
+.mission-story__voice { margin-top: .75rem; padding: .8rem 1rem; border-left: 3px solid var(--blue-strong); border-radius: 0 .75rem .75rem 0; background: rgba(168,221,242,.055); }
+.mission-story__voice p { margin: .45rem 0 0; color: var(--ink); font: 500 1rem/1.55 var(--serif); }
+.mission-story__fact { margin: .5rem 0 0; }
 .timeline-story__missions { grid-area: missions; display: flex; flex-wrap: wrap; gap: 9px; margin-top: var(--space-4); padding: var(--space-3) 0; }
 .timeline-source { grid-area: source; margin-bottom: var(--space-2); }
 .timeline-controls { grid-area: controls; display: flex; justify-content: space-between; gap: 10px; width: 100%; padding-top: 13px; border-top: 1px solid var(--line); }
@@ -141,8 +144,6 @@
 .source-card { display: flex; flex-direction: column; align-items: start; min-height: 135px; padding: 15px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.025); }
 .source-card__type { color: var(--gold); font-size: 9px; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
 .source-card__title { margin: 8px 0 auto; font: 500 16px/1.3 var(--serif); }
-.about-ai-card { max-width: 900px; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: radial-gradient(ellipse at top right, rgba(168,221,242,.08), transparent 48%), var(--surface); }
-.about-ai-card__paragraph { max-width: 720px; color: var(--muted); font-size: 15px; line-height: 1.8; }
 
 @media (max-width: 1040px) {
   .mission-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -163,8 +164,8 @@
   .home-hotspot__words strong { font-size: 9px; }
   .home-hotspot__words small { font-size: 7px; }
   .mission-grid, .source-grid { grid-template-columns: 1fr; }
-  .mission-photo--compact .mission-photo__frame { min-height: 160px; }
-  .mission-photo--compact .mission-photo__image { height: 185px; }
+  .mission-photo--compact .mission-photo__frame { min-height: 0; aspect-ratio: 16 / 9; }
+  .mission-photo--compact .mission-photo__image { height: 100%; }
   .mission-card__summary { min-height: 0; }
   .timeline-experience { gap: 8px; }
   .timeline-missions, .timeline-steps { display: flex; overflow-x: auto; gap: 8px; padding: 4px 4px 8px; overscroll-behavior-x: contain; }
@@ -251,8 +252,9 @@
 }
 .mission-card__summary { min-height: 0; font-size: 1rem; line-height: 1.5; }
 .mission-card__button { min-height: 2.75rem; font-size: .9375rem; }
-.mission-photo__frame, .mission-photo--compact .mission-photo__frame { min-height: clamp(10rem, 28vw, 13rem); }
-.mission-photo--compact .mission-photo__image { width: 100%; height: clamp(10rem, 28vw, 13rem); max-width: 100%; }
+.mission-photo__frame { min-height: clamp(10rem, 28vw, 13rem); }
+.mission-photo--compact .mission-photo__frame { min-height: 0; aspect-ratio: 16 / 9; }
+.mission-photo--compact .mission-photo__image { width: 100%; height: 100%; max-width: 100%; }
 .timeline-experience { gap: var(--space-3); }
 .timeline-missions, .timeline-steps {
   display: grid;
@@ -286,8 +288,7 @@
 .quiz-attribution { font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }
 .glossary-list { grid-template-columns: minmax(0, .45fr) minmax(0, 1fr); width: 100%; max-width: 68rem; }
 .glossary-list__term, .glossary-list__definition { padding: var(--space-3); font-size: 1rem; line-height: 1.5; overflow-wrap: anywhere; }
-.about-ai-card { width: 100%; padding: clamp(var(--space-4), 4vw, var(--space-6)); }
-.about-ai-card__paragraph, .dialog-lede, .mission-story__chapter p:not(.eyebrow), .artifact-card > p:not(.eyebrow) { font-size: 1rem; line-height: 1.55; }
+.dialog-lede, .mission-story__chapter p:not(.eyebrow), .artifact-card > p:not(.eyebrow) { font-size: 1rem; line-height: 1.55; }
 .source-card { min-width: 0; padding: var(--space-3); }
 .source-card__title { overflow-wrap: anywhere; }
 
@@ -322,12 +323,13 @@
     grid-template-rows: minmax(0, 1fr);
     gap: clamp(var(--space-4), 3vw, var(--space-6));
     min-height: max(28rem, calc(100dvh - 10rem));
+    margin-inline: auto;
     padding: clamp(var(--space-4), 3vw, var(--space-6));
     background-position: center, center, 58% 42%;
   }
   .home-hero__title { max-width: 22ch; font-size: clamp(2.75rem, 5vw, 4.75rem); }
   .home-hero__art { min-height: clamp(20rem, 36dvh, 26rem); }
-  .home-destination-controls { bottom: 3.75rem; gap: var(--space-5); }
+  .home-destination-controls { bottom: 7rem; gap: var(--space-5); }
   .home-destination-prompt { bottom: 1.5rem; }
   .hero-elaine { width: clamp(8rem, 14vw, 10.375rem); }
   .hero-art-caption { font-size: .875rem; }
@@ -335,6 +337,15 @@
   .timeline-steps { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .scale-row__top { align-items: baseline; flex-direction: row; justify-content: space-between; gap: var(--space-3); }
   .scale-row__size { text-align: right; }
+}
+
+@media (min-width: 42.5rem) and (max-width: 63.999rem) {
+  .timeline-steps {
+    grid-template-columns: repeat(6, minmax(8rem, 1fr));
+    overflow-x: auto;
+    padding: 4px 4px 8px;
+    overscroll-behavior-x: contain;
+  }
 }
 
 @media (min-width: 64rem) {
@@ -359,8 +370,8 @@
   .mission-card__title { font-size: clamp(1.15rem, 1.35vw, 1.35rem); }
   .mission-card__summary { font-size: .875rem; line-height: 1.45; }
   .mission-card__button { min-height: 2.5rem; font-size: .8125rem; }
-  .mission-photo--compact .mission-photo__frame { min-height: clamp(7rem, 9vw, 9rem); }
-  .mission-photo--compact .mission-photo__image { height: clamp(7rem, 9vw, 9rem); }
+  .mission-photo--compact .mission-photo__frame { min-height: 0; aspect-ratio: 16 / 9; }
+  .mission-photo--compact .mission-photo__image { height: 100%; }
 }
 
 @media (min-width: 90rem) {
@@ -375,11 +386,38 @@
   .home-hero__title { font-size: clamp(2rem, 6vw, 3.5rem); }
 }
 
+/* Texto de leitura permanece legível em telas pequenas. */
+.home-hero__lede,
+.home-hero__note,
+.hero-art-caption,
+.timeline-story__text,
+.timeline-step,
+.timeline-guide__fact,
+.mission-card__summary,
+.mission-story__chapter p:not(.eyebrow),
+.mission-story__voice p,
+.mission-story__fact,
+.artifact-card > p:not(.eyebrow),
+.map-key__item,
+.scale-footnote,
+.scale-row__size,
+.quiz-answer,
+.quiz-feedback,
+.quiz-attribution,
+.glossary-list__term,
+.glossary-list__definition { font-size: 1rem; }
+
+.home-destination-prompt { font-size: 1rem; }
+.hero-art-caption { line-height: 1.4; }
+
 @media (prefers-reduced-motion: reduce) {
   .hero-art-identity, .hero-elaine { animation: none; }
 }
 
 @media (max-width: 42.499rem) {
+  .home-hero__art { min-height: 23rem; }
+  .home-destination-controls { bottom: 4rem; }
+  .home-destination-prompt { bottom: 0; }
   .timeline-missions, .timeline-steps {
     display: flex;
     overflow-x: auto;

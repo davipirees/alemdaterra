@@ -1,8 +1,6 @@
-// Código gerado com auxílio de IA (Codex). Fontes oficiais registradas por história.
+// Fontes oficiais registradas por história.
 window.MISSION_DATA = {
   metadata: {
-    organizedWithAI: true,
-    aiTool: "Codex, da OpenAI",
     factualPolicy: "Os fatos desta exposição apontam para registros do NSSDCA/NSSDC ou da NASA.",
     sources: [
       {
@@ -129,20 +127,39 @@ window.MISSION_DATA = {
         id: "apollo-hardware",
         title: "NASA: artefatos humanos deixados na Lua",
         url: "https://www.nasa.gov/wp-content/uploads/static/history/humanartifacts.html"
+      },
+      {
+        id: "apollo-alsep-evolution",
+        title: "EASEP e ALSEP: estações científicas da Apollo",
+        url: "https://ntrs.nasa.gov/api/citations/20190032593/downloads/20190032593.pdf"
+      },
+      {
+        id: "viking-landing-heritage",
+        title: "Como a NASA pousa em Marte — NASA Science",
+        url: "https://science.nasa.gov/planetary-science/programs/mars-exploration/mission-timeline/how-we-land-on-mars/"
+      },
+      {
+        id: "mars-rover-lineage",
+        title: "Secrets of the Mars Rovers — NASA",
+        url: "https://www.nasa.gov/podcasts/on-a-mission/secrets-of-the-mars-rovers-s4e12/"
+      },
+      {
+        id: "opportunity-lessons",
+        title: "Six Things to Know About NASA's Opportunity Rover — NASA Science",
+        url: "https://science.nasa.gov/missions/mer/six-things-to-know-about-nasas-opportunity-rover/"
       }
     ]
   },
 
   tabs: [
-    { id: "inicio", label: "Início", icon: "home", title: "Além da Terra: explorando a história das missões espaciais", intro: "Conheça cinco missões à Lua e a Marte. Descubra o que seus equipamentos revelaram.", elaineLines: ["Lua ou Marte? Escolha um destino e começamos a exploração.", "Cada equipamento tem uma história. Qual delas você quer descobrir primeiro?", "Pronto para embarcar? Toque em um destino para conhecer suas missões."] },
+    { id: "inicio", label: "Início", icon: "home", title: "Além da Terra: explorando a história das missões espaciais", intro: "Conheça cinco missões à Lua e a Marte. Descubra o que seus equipamentos revelaram e como ajudaram a impulsionar a exploração espacial.", elaineLines: ["Lua ou Marte? Escolha um destino e começamos a exploração.", "Cada equipamento tem uma história. Qual delas você quer descobrir primeiro?", "Pronto para embarcar? Toque em um destino para conhecer suas missões."] },
     { id: "linha-do-tempo", label: "Linha do tempo", icon: "timeline", title: "Uma missão acontece em etapas", intro: "Escolha um capítulo para iniciarmos a jornada!", elaineLines: ["Vamos escolher um capítulo e começar nossa jornada!", "Cada etapa revela uma parte diferente da missão. Por onde começamos?", "Lançamento, viagem ou descobertas? Você escolhe o próximo capítulo."] },
     { id: "equipamentos", label: "Equipamentos", icon: "rover", title: "Conheça quem foi explorar", intro: "Cada equipamento foi construído para uma tarefa. Abra um cartão para conhecer sua missão, sua história e sua ficha técnica.", elaineLines: ["Repare nas imagens e nos nomes: cada explorador tinha um trabalho diferente.", "Abra um cartão para ver como cada equipamento funcionava.", "Alguns foram feitos para andar; outros, para pousar e medir o ambiente."] },
     { id: "mapa", label: "Mapa", icon: "map", title: "Onde essas histórias aconteceram?", intro: "Cada cor identifica uma missão. Os trajetos são esquemáticos e não mostram distâncias reais.", elaineLines: ["Os pontos mostram onde cada missão explorou ou passou.", "Toque em um local do mapa para abrir a missão correspondente.", "O LRV percorreu a região Hadley-Apennine com os astronautas da Apollo 15."] },
     { id: "escala", label: "Escala", icon: "scale", title: "Tamanhos de verdade, em comparação", intro: "Veja quanto espaço alguns exploradores ocupavam. As barras usam a mesma escala; os valores são aproximados e têm fonte.", elaineLines: ["Compare as barras para perceber a diferença de tamanho entre os equipamentos.", "Uma ferramenta pequena também pode fazer grandes descobertas.", "Use a mesma escala para comparar os exploradores desta exposição."] },
     { id: "quiz", label: "Quiz", icon: "quiz", title: "Desafio de bordo", intro: "Uma pergunta por vez. Escolha uma resposta e descubra na hora por que ela faz sentido — ou o que os dados mostram.", elaineLines: ["Leia as opções com calma: cada pergunta tem pistas importantes.", "Vamos testar o que você descobriu ao longo da jornada?", "Pode errar e tentar de novo: o importante é investigar a explicação."] },
     { id: "glossario", label: "Glossário", icon: "book", title: "Palavras de uma missão espacial", intro: "Termos científicos e de engenharia explicados em linguagem simples.", elaineLines: ["Encontrou uma palavra nova? Aqui a gente explica sem complicação.", "Explore os termos e depois volte às missões para reconhecê-los.", "A ciência tem palavras especiais; vamos descobrir o que elas significam."] },
-    { id: "fontes", label: "Fontes", icon: "source", title: "Continue explorando", intro: "As histórias e os dados desta exposição se apoiam em páginas e arquivos da NASA, do NSSDC e do NSSDCA.", elaineLines: ["Aqui estão as fontes para continuar sua investigação.", "Cientistas comparam informações de arquivos e observações.", "Quer conferir um detalhe? Abra uma fonte e explore os registros da missão."] },
-    { id: "sobre-a-ia", label: "Sobre o site", icon: "info", title: "Como este diário foi criado", intro: "Uma nota transparente sobre as ferramentas usadas para organizar o projeto e as imagens exibidas.", elaineLines: ["Nesta aba explicamos como as ferramentas digitais ajudaram a montar o diário.", "As informações das missões têm fontes identificadas para você conferir.", "Transparência também faz parte de uma boa investigação científica."] }
+    { id: "fontes", label: "Fontes", icon: "source", title: "Gostou das missões? Continue explorando!", intro: "As histórias e os dados desta exposição se apoiam em páginas e arquivos da NASA, do NSSDC e do NSSDCA.", elaineLines: ["Aqui estão as fontes para continuar sua investigação.", "Cientistas comparam informações de arquivos e observações.", "Quer conferir um detalhe? Abra uma fonte e explore os registros da missão."] },
   ],
 
   home: {
@@ -164,8 +181,8 @@ window.MISSION_DATA = {
     elaineLines: ["Lua ou Marte? Escolha um destino para descobrir o que cada missão investigou.", "Pronto para explorar? Cada equipamento tem uma história para contar.", "Vamos começar por um dos destinos e conhecer as pistas que as missões encontraram."],
     elaine: "Boas-vindas, tripulante! Meu nome é Elaine e vou embarcar com você nesta missão. Escolha um destino e vamos investigar juntos!",
     elainePhoto: {
-      src: "assets/elaine-astronaut-clean.png",
-      alt: "Elaine, astronauta ilustrada sorrindo e segurando uma bandeira azul lisa",
+      src: "assets/elaine-astronaut-clean-v2.png",
+      alt: "Elaine, astronauta ilustrada sorrindo e acenando com a mão",
       caption: "Boas-vindas, tripulante! Meu nome é Elaine e vou embarcar com você nesta missão."
     }
   },
@@ -195,7 +212,7 @@ window.MISSION_DATA = {
           { title: "20 de julho: Eagle pousa", text: "Armstrong e Aldrin desceram no Mar da Tranquilidade. Michael Collins continuou em órbita lunar dentro de Columbia, aguardando o reencontro com os colegas.", curiosity: "Na descida, Armstrong assumiu o controle manual para desviar de uma área cheia de pedras.", sourceId: "apollo-11" },
           { title: "Trabalho no chão lunar", text: "Armstrong e Aldrin passaram cerca de 21 horas na superfície, coletaram rochas e solo e instalaram instrumentos. Um sismômetro registrava vibrações; um refletor devolvia pulsos de laser enviados da Terra.", curiosity: "A primeira caminhada lunar durou 2 horas e 31 minutos. Nesse tempo, eles percorreram cerca de 1 quilômetro.", sourceId: "apollo-easep" },
           { title: "A Lua virou laboratório", text: "As amostras e os instrumentos deram aos cientistas material para estudar a história geológica lunar. O sismômetro registrou vibrações, enquanto as rochas trazidas à Terra continuam sendo analisadas.", curiosity: "A equipe trouxe 21,55 quilos de rochas e solo lunar para estudar aqui na Terra.", sourceId: "apollo-easep" },
-          { title: "Um espelho ainda responde", text: "Eagle ficou na Lua e os astronautas voltaram para casa. O refletor passivo não precisa de energia: observatórios terrestres ainda usam lasers para medir com precisão a distância entre a Terra e a Lua.", curiosity: "Uma placa deixada na Lua termina com esta mensagem: “Viemos em paz por toda a humanidade.”", sourceId: "apollo-laser" }
+          { title: "Um espelho ainda responde", text: "Os instrumentos da Apollo 11 deram o primeiro passo para uma estação científica lunar. A partir da Apollo 12, o pacote EASEP abriu caminho para as estações ALSEP, mais completas e alimentadas por geradores de radioisótopos, instaladas também nas Apollo 14, 15, 16 e 17. Juntas, elas enviaram dados por quase cinco anos e ampliaram o que sabíamos sobre o interior e a história da Lua.", curiosity: "Uma placa deixada na Lua termina com esta mensagem: “Viemos em paz por toda a humanidade.”", sourceId: "apollo-alsep-evolution" }
         ]
       },
       {
@@ -206,7 +223,7 @@ window.MISSION_DATA = {
           { title: "Dois pousos em lugares diferentes", text: "Viking 1 pousou em Chryse Planitia em julho de 1976; Viking 2 chegou a Utopia Planitia em setembro. As duas sondas tinham orbitadores que continuaram observando o planeta.", curiosity: "Só cinco minutos depois de pousar, a Viking 1 já enviava sua primeira foto de Marte.", sourceId: "viking-story" },
           { title: "Laboratórios robóticos no solo", text: "Braços mecânicos recolhiam pequenas porções de solo e as levavam a instrumentos a bordo. Câmeras e sensores também acompanhavam o tempo, o terreno e a atmosfera marciana.", curiosity: "As câmeras dos dois pousadores enviaram mais de 4.500 imagens da superfície marciana.", sourceId: "viking-story" },
           { title: "A busca por vida pediu cautela", text: "Os experimentos produziram resultados intrigantes, mas não provaram que havia vida no solo estudado. As medições mostraram que uma resposta científica precisa comparar pistas e explicações diferentes.", curiosity: "Cada pousador fez três experimentos biológicos para procurar sinais de vida no solo.", sourceId: "viking-story" },
-          { title: "Um primeiro retrato detalhado", text: "Os orbitadores mapearam Marte e os pousadores trabalharam por anos. As imagens, os dados do clima e as análises do solo viraram uma referência para as missões que vieram depois.", curiosity: "O pousador Viking 1 trabalhou por 2.307 dias terrestres — mais de seis anos em Marte.", sourceId: "viking" }
+          { title: "Um primeiro retrato detalhado", text: "Viking transformou o pouso em Marte num procedimento que outras naves puderam herdar. Phoenix e InSight são as sucessoras mais próximas: reutilizaram e adaptaram ideias de entrada, paraquedas e controle da descida. As imagens dos orbitadores também ajudaram a tornar a escolha de locais seguros parte do preparo das missões seguintes.", curiosity: "O pousador Viking 1 trabalhou por 2.307 dias terrestres — mais de seis anos em Marte.", sourceId: "viking-landing-heritage" }
         ]
       },
       {
@@ -217,7 +234,7 @@ window.MISSION_DATA = {
           { title: "Airbags amortecem o pouso", text: "Em 4 de julho de 1997, paraquedas, retrofoguetes e airbags ajudaram Pathfinder a chegar a Ares Vallis. Dois dias depois, Sojourner desceu pela rampa e colocou as seis rodas no solo marciano.", curiosity: "Os airbags fizeram Pathfinder quicar cerca de 15 vezes antes de parar em Marte.", sourceId: "pathfinder" },
           { title: "O rover examina as rochas", text: "Sojourner se deslocava devagar entre pedras próximas ao pousador. Seu APXS analisava elementos químicos em rochas e solo, enquanto câmeras ajudavam a equipe na Terra a escolher o próximo trajeto.", curiosity: "Sojourner andava bem devagar: sua velocidade máxima era de cerca de 1 centímetro por segundo.", sourceId: "sojourner-apxs" },
           { title: "Pistas de um passado com água", text: "Pedras arredondadas e outros detalhes do terreno ajudaram os cientistas a investigar a possibilidade de uma antiga inundação em Ares Vallis. Eram pistas geológicas, não sinais de vida.", curiosity: "O rover fez 550 fotos e analisou rochas e solo em 16 lugares diferentes.", sourceId: "sojourner-apxs" },
-          { title: "O primeiro rover em outro planeta", text: "Sojourner mostrou que um veículo pequeno podia explorar Marte de perto. O pouso com airbags e a comunicação entre rover e estação abriram caminho para novas gerações de exploradores robóticos.", curiosity: "A estação Pathfinder recebeu o nome Carl Sagan Memorial Station, em homenagem ao cientista e divulgador da ciência.", sourceId: "pathfinder-story" }
+          { title: "O primeiro rover em outro planeta", text: "Com seis rodas, energia solar e comandos enviados da Terra, Sojourner mostrou que um rover pequeno podia explorar Marte. A experiência entrou nos rovers Spirit e Opportunity; as lições dessas duplas chegaram depois à Curiosity e à Perseverance. Cada geração pôde avançar sem começar do zero.", curiosity: "A estação Pathfinder recebeu o nome Carl Sagan Memorial Station, em homenagem ao cientista e divulgador da ciência.", sourceId: "mars-rover-lineage" }
         ]
       },
       {
@@ -228,7 +245,7 @@ window.MISSION_DATA = {
           { title: "Chegada a Meridiani Planum", text: "Em janeiro de 2004, o conjunto pousou dentro de airbags e quicou várias vezes antes de parar. Quando os airbags esvaziaram, o rover se preparou para sair e começar a explorar a planície.", curiosity: "Os airbags de Opportunity quicaram pelo menos 26 vezes antes de o rover parar.", sourceId: "opportunity-story" },
           { title: "Raspando a superfície das rochas", text: "Opportunity usava a ferramenta RAT para desgastar uma camada fina e revelar rocha menos alterada. Câmeras e instrumentos analisavam as marcas, minerais e texturas expostos.", curiosity: "A RAT desgastava um círculo de cerca de 4,5 centímetros de largura e meio centímetro de profundidade.", sourceId: "opportunity-tools" },
           { title: "Minerais contaram a história da água", text: "Hematita e outras características das rochas indicaram que água líquida esteve presente em Marte há muito tempo. O rover não encontrou rios atuais: leu as mudanças que a água deixou gravadas nas pedras.", curiosity: "Opportunity encontrou pequenas esferas de hematita apelidadas de “blueberries”, porque lembravam mirtilos.", sourceId: "opportunity-story" },
-          { title: "Quase quinze anos de exploração", text: "A missão principal foi planejada para durar cerca de 90 dias marcianos, mas Opportunity trabalhou por quase 15 anos. Uma grande tempestade de poeira interrompeu a comunicação e encerrou sua jornada em 2019.", curiosity: "Opportunity percorreu 45,16 quilômetros — mais que a distância de uma maratona — em outro planeta.", sourceId: "opportunity" }
+          { title: "Quase quinze anos de exploração", text: "Junto com Spirit, Opportunity ensinou como um rover podia se comunicar com a Terra, usar visão em 3D para navegar e fazer observações científicas com autonomia. Essas lições ajudaram a orientar a Curiosity e a Perseverance, que levaram instrumentos e capacidades ainda maiores a Marte. A longa trilha do Opportunity virou experiência para os exploradores que vieram depois.", curiosity: "Opportunity percorreu 45,16 quilômetros — mais que a distância de uma maratona — em outro planeta.", sourceId: "opportunity-lessons" }
         ]
       },
       {
@@ -239,7 +256,7 @@ window.MISSION_DATA = {
           { title: "Desdobrado no solo lunar", text: "Após pousar perto de Hadley Rille, os astronautas retiraram o LRV do compartimento do Falcon usando fitas, roldanas e guinchos. Em 31 de julho, ele estava pronto para a primeira viagem de carro na Lua.", curiosity: "Grande parte da abertura do veículo acontecia enquanto os astronautas o baixavam até o chão.", sourceId: "lunar-roving-vehicle" },
           { title: "Um carro elétrico para dois exploradores", text: "Scott e Irwin controlavam o rover com uma alavanca entre os assentos. Duas baterias forneciam energia e cada uma das quatro rodas tinha seu próprio motor elétrico.", curiosity: "Cada roda tinha um motor elétrico próprio, e o rover podia ser dirigido pelos dois astronautas.", sourceId: "lunar-roving-vehicle" },
           { title: "Mais terreno, mais pistas científicas", text: "Nas três viagens, a dupla percorreu cerca de 27,9 quilômetros, observou a geologia de Hadley-Apennine e recolheu mais de 170 libras de amostras lunares. O veículo ajudou a equipe a alcançar pontos mais distantes do módulo.", curiosity: "A Apollo 15 percorreu cerca de 17,5 milhas com o LRV e trouxe mais de 170 libras de amostras.", sourceId: "apollo-15-mission" },
-          { title: "Um explorador que ficou na Lua", text: "Antes de deixar a superfície, Scott e Irwin estacionaram o LRV perto do local de pouso. Ele permanece na Lua; os rovers das Apollo 16 e 17 também ficaram onde terminaram suas missões.", curiosity: "O primeiro carro lunar continua em Hadley-Apennine, como parte do registro da exploração humana.", sourceId: "lunar-roving-vehicle" }
+          { title: "Um explorador que ficou na Lua", text: "O LRV da Apollo 15 mostrou que um veículo elétrico dobrável podia ampliar o alcance dos astronautas e ajudá-los a trazer mais amostras. O mesmo tipo de equipamento voltou nas Apollo 16 e 17: seus LRVs levaram as equipes mais longe do módulo lunar e aumentaram a área que puderam investigar. Os três veículos ficaram na Lua, mas a ideia de levar mobilidade à superfície marcou a exploração lunar.", curiosity: "O primeiro carro lunar continua em Hadley-Apennine, como parte do registro da exploração humana.", sourceId: "lunar-roving-vehicle" }
         ]
       }
     ]
@@ -272,11 +289,6 @@ window.MISSION_DATA = {
     { term: "Refletor a laser", definition: "Conjunto de espelhos que devolve pulsos de laser enviados da Terra." }
   ],
 
-  aboutAI: {
-    title: "Declaração de uso de IA",
-    paragraphs: ["Ferramentas de IA auxiliaram a organização do código, a estrutura dos textos e a criação de elementos visuais originais deste projeto educativo.", "As fotografias identificadas como NASA · NSSDC são registros de arquivo e mantêm seus créditos. O fundo espacial cinematográfico e a astronauta-guia Elaine são ilustrações geradas por IA. A personagem é original desta exposição.", "Os fatos e números apresentados têm links para fontes oficiais. A revisão humana continua necessária para corrigir, contextualizar e atualizar qualquer informação."]
-  },
-
   quizResult: {
     eyebrow: "MISSÃO CUMPRIDA",
     message: "Você acompanhou os dados e comparou as pistas como uma equipe científica."
@@ -306,16 +318,19 @@ window.MISSION_DATA = {
         {
           title: "Uma missão pequena com uma pergunta enorme",
           text: "Em 1996, a Mars Pathfinder partiu para testar uma forma mais simples e econômica de chegar a Marte com um laboratório e um rover. Ares Vallis foi escolhido porque parecia seguro para pousar e tinha muitas rochas que uma antiga inundação poderia ter carregado de longe.",
+          voice: "Meu nome é Sojourner. Sou pequeno, mas cheguei a um terreno novo para testar como um rover poderia se mover e observar Marte. Cada pedra à minha frente abre uma pergunta.",
           sourceId: "pathfinder-story"
         },
         {
           title: "Seis rodas e um laboratório de bolso",
           text: "Para sobreviver à descida, Pathfinder abriu um paraquedas e inflou airbags gigantes; depois de quicar no chão, abriu suas rampas. Sojourner pesava só 10,5 quilos, usava energia solar e levou câmeras e um espectrômetro APXS. Esse instrumento encostava nos alvos e ajudava a descobrir quais elementos formavam as rochas.",
+          voice: "Minhas rodas avançam devagar. Quando o APXS encosta numa pedra, os dados ajudam a revelar seus elementos — como ler os ingredientes de uma receita sem provar o prato.",
           sourceId: "sojourner-apxs"
         },
         {
           title: "Pedras que contam uma história de água",
           text: "Planejado para uma semana, Sojourner trabalhou por 83 dias e analisou rochas e solo em 16 lugares. Algumas pedras arredondadas lembravam seixos que a água desgasta na Terra. Junto com outras pistas, elas sugeriram que uma inundação antiga passou por ali — uma hipótese geológica, não uma prova de vida em Marte.",
+          voice: "Não voltei para casa, mas as pedras arredondadas viraram pistas. Meu trabalho ajudou cientistas a investigar uma antiga inundação em Marte. Pequeno explorador, grande pergunta.",
           sourceId: "pathfinder-story"
         }
       ]
@@ -343,16 +358,19 @@ window.MISSION_DATA = {
         {
           title: "Quatro veículos, duas perguntas",
           text: "Lançadas em 1975, Viking 1 e Viking 2 eram cada uma uma dupla: um orbitador para observar o planeta e um pousador para trabalhar no chão. A equipe queria entender o clima e as rochas de Marte — e procurar sinais de vida. As fotos do orbitador ajudavam a escolher um lugar seguro para descer.",
+          voice: "Somos Viking 1 e Viking 2: duas duplas de máquinas. Nossos orbitadores observam de cima; nossos pousadores trabalham no chão. Partimos para investigar Marte e procurar sinais de vida.",
           sourceId: "viking-story"
         },
         {
           title: "Uma pá robótica leva Marte ao laboratório",
           text: "Em 1976, os pousadores chegaram a Chryse Planitia e Utopia Planitia. Seus braços robóticos recolhiam pequenas porções de solo e as colocavam em experimentos dentro da nave; câmeras fotografavam o horizonte e sensores acompanhavam o tempo. Lá em cima, os orbitadores fizeram mais de 52 mil imagens e mapearam quase todo o planeta.",
+          voice: "Com nossos braços, levamos porções de solo até os experimentos a bordo. É como levar uma amostra à bancada sem sair do planeta. Câmeras e sensores completam o retrato.",
           sourceId: "viking-story"
         },
         {
           title: "Uma resposta que exigiu cautela",
           text: "Alguns testes de solo deram reações intrigantes, mas a busca não encontrou evidência definitiva de vida nos locais estudados. Os resultados mostraram por que um sinal isolado não basta: é preciso comparar experimentos e procurar explicações diferentes. Os dados de Viking ainda ajudam a preparar novas perguntas sobre Marte.",
+          voice: "Alguns testes deram respostas intrigantes, mas nenhuma prova final de vida. Minha história não terminou com um simples sim ou não: deixei dados para outras gerações fazerem perguntas melhores.",
           sourceId: "viking-story"
         }
       ]
@@ -380,16 +398,19 @@ window.MISSION_DATA = {
         {
           title: "Um robô com energia do Sol",
           text: "Opportunity chegou a Marte em 2004 para procurar pistas sobre a água e sobre ambientes que poderiam ter sido favoráveis à vida antiga. Seus painéis solares carregavam as baterias. Por isso, cientistas escolheram uma região onde as rochas expostas, crateras e minerais poderiam guardar uma história que a poeira escondia.",
+          voice: "Sou Opportunity. Em Marte, meus painéis solares carregavam minhas baterias. Fui procurar nas rochas e crateras sinais de água antiga — páginas de um livro que a poeira tentava esconder.",
           sourceId: "opportunity-story"
         },
         {
           title: "Raspar a pedra para enxergar melhor",
           text: "O braço robótico aproximava câmeras e instrumentos das rochas. Uma ferramenta giratória, chamada RAT, removia a camada empoeirada e desgastada para expor material mais fresco; outros instrumentos examinavam a textura e os elementos químicos. Na cratera Endurance, Opportunity também fotografou as paredes em camadas de 81 posições diferentes.",
+          voice: "A poeira e o desgaste escondiam a superfície. Com a RAT, eu raspava a rocha; outros instrumentos examinavam a textura e os elementos, como uma lupa ligada a um laboratório.",
           sourceId: "opportunity-tools"
         },
         {
           title: "Pequenas esferas, um grande indício",
           text: "Opportunity encontrou pequenas esferas ricas em hematita — um mineral que costuma se formar com água — e rochas com sinais de ambientes salgados e úmidos no passado. Não eram gotinhas de água atuais, mas pistas guardadas na pedra. Elas ajudaram a mostrar que Marte teve condições muito diferentes das de hoje.",
+          voice: "As pequenas esferas não eram gotinhas de água, mas guardavam pistas químicas. Depois de quase quinze anos, a poeira interrompeu meu contato. Minha trilha terminou; as perguntas que ajudei a abrir continuam.",
           sourceId: "opportunity"
         }
       ]
@@ -417,16 +438,19 @@ window.MISSION_DATA = {
         {
           title: "O primeiro passeio de carro na Lua",
           text: "A Apollo 15 foi a primeira missão a levar o Lunar Roving Vehicle. O veículo elétrico de quatro rodas aumentou o alcance dos astronautas: Scott e Irwin podiam visitar locais geológicos mais distantes do módulo lunar e transportar ferramentas e amostras.",
+          voice: "Sou o LRV. Viajei dobrado no Falcon. Quando cheguei ao chão lunar, virei uma extensão das pernas e das ferramentas de Scott e Irwin.",
           sourceId: "apollo-15-mission"
         },
         {
           title: "Dobrado para caber no módulo lunar",
           text: "O rover viajou guardado no compartimento do Falcon. Na Lua, os astronautas o baixaram com fitas e roldanas; partes do chassi e as rodas se abriram para formar o veículo. Duas baterias alimentavam os motores e os sistemas de direção.",
+          voice: "Desci do compartimento com fitas e roldanas. Minhas duas baterias alimentavam quatro motores, um em cada roda. Uma alavanca entre os assentos ajudava os astronautas a me guiar.",
           sourceId: "lunar-roving-vehicle"
         },
         {
           title: "Mais distância para investigar as rochas",
           text: "Em três excursões, o LRV percorreu cerca de 27,8 quilômetros em pouco mais de três horas de condução. A equipe da Apollo 15 explorou a região Hadley-Apennine por 18 horas e 37 minutos e trouxe mais de 170 libras de amostras para estudo na Terra.",
+          voice: "Nas excursões, ajudei os astronautas a alcançar pontos geológicos e trazer amostras. Quando a equipe partiu, fiquei na Lua. Mostrei como a mobilidade amplia o que a ciência pode observar.",
           sourceId: "apollo-15-mission"
         }
       ]
@@ -454,16 +478,19 @@ window.MISSION_DATA = {
         {
           title: "Uma equipe dividida entre duas naves",
           text: "Lançada em julho de 1969, Apollo 11 tinha três astronautas e duas espaçonaves. Columbia permaneceu em órbita lunar com Michael Collins. Eagle desceu levando Neil Armstrong e Buzz Aldrin. O desenho em duas partes era essencial: o módulo de subida poderia reencontrar Columbia e levar os exploradores de volta.",
+          voice: "Somos os equipamentos científicos da Apollo 11. Columbia ficou em órbita; Eagle desceu com Armstrong e Aldrin. Essa divisão tornou possível explorar a superfície e preparar o reencontro no espaço.",
           sourceId: "apollo-11"
         },
         {
           title: "Transformar alguns passos em ciência",
           text: "Depois do pouso no Mar da Tranquilidade, Armstrong e Aldrin coletaram 58 amostras de rocha e solo. Também instalaram dois aparelhos: um sismômetro para registrar vibrações e um refletor que devolve pulsos de laser enviados da Terra. A folha do experimento de vento solar foi recolhida e voltou com os astronautas.",
+          voice: "Depois do pouso, parte de nós virou uma pequena estação científica. O sismômetro registrava vibrações; o refletor devolvia pulsos de laser. As amostras seguiram viagem até os laboratórios da Terra.",
           sourceId: "apollo-easep"
         },
         {
           title: "Um espelho que continua respondendo",
           text: "O sismômetro detectou vibrações e impactos por cerca de três semanas, oferecendo a primeira visão do interior da Lua. Já o refletor passivo não precisa de bateria: estações na Terra ainda disparam lasers e medem o tempo que a luz leva para voltar. As amostras trazidas pela tripulação também continuam sendo estudadas.",
+          voice: "A tripulação voltou, mas uma parte do experimento ficou na Lua. O refletor ainda participa de medições entre a Terra e a Lua. Nosso trabalho não voltou para casa: continua presente nas perguntas e nas pesquisas.",
           sourceId: "apollo-laser"
         }
       ]
