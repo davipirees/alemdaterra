@@ -351,7 +351,7 @@
     });
     copy.append(title, el("p", "home-hero__lede", DATA.tabs[0].intro));
     const cta = button(DATA.home.equipmentCta, "button button--primary", () => navigate("linha-do-tempo"));
-    cta.append(makeIcon("rover"));
+    cta.append(makeIcon("timeline"));
     copy.append(cta, el("p", "home-hero__note", DATA.home.note));
     hero.append(copy);
 
