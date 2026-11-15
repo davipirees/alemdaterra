@@ -172,7 +172,7 @@ window.MISSION_DATA = {
       { text: "." }
     ],
     destinationPrompt: "Toque em um destino para abrir as missões",
-    equipmentCta: "Conhecer os equipamentos",
+    equipmentCta: "Linha do tempo",
     note: "Missões reais, imagens com créditos e fontes oficiais.",
     destinations: [
       { id: "marte", label: "Marte", note: "3 jornadas", description: "O planeta vermelho guarda pistas de água antiga. Escolha qual explorador você quer conhecer.", missionIds: ["sojourner", "viking", "opportunity"] },
