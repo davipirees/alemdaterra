@@ -463,7 +463,13 @@
       hotspot.append(orb, words);
       destinations.append(hotspot);
     });
-    art.append(bot, mascotIdentity, destinationPrompt, destinations);
+    art.append(
+      bot,
+      mascotIdentity,
+      destinationPrompt,
+      destinations,
+      el("span", "ai-image-credit", ui("Imagem gerada por IA", "AI-generated image"))
+    );
     hero.append(art);
     target.append(hero);
   }
@@ -634,6 +640,7 @@
       el("span", "map-body map-body--mars", ui("MARTE", "MARS")),
       el("span", "map-body map-body--moon", ui("LUA", "MOON"))
     );
+    board.append(el("span", "ai-map-credit", ui("Mapa gerado por IA", "AI-generated map")));
     const resolvePointMission = (point) => (Array.isArray(point.missionIds) ? point.missionIds : [])
       .map((missionId) => missionsById.get(missionId))
       .find(Boolean);

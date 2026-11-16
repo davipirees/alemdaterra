@@ -80,6 +80,15 @@ test("map points and both question banks reference valid missions and sources", 
   }
 });
 
+test("home art and map show localized AI credits", () => {
+  const source = fs.readFileSync(path.join(root, "js/script.js"), "utf8");
+  assert.match(source, /Imagem gerada por IA.*AI-generated image/);
+  assert.match(source, /Mapa gerado por IA.*AI-generated map/);
+  const styles = fs.readFileSync(path.join(root, "css/experience.css"), "utf8");
+  assert.match(styles, /\.ai-image-credit/);
+  assert.match(styles, /\.ai-map-credit/);
+});
+
 test("game creates ten unique questions in both languages", () => {
   const source = fs.readFileSync(path.join(root, "js/script.js"), "utf8");
   const start = source.indexOf("function createGameRound() {");
